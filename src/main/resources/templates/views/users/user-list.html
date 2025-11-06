@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head ('Ticket Logger - User List')"></head>
+
+
+<body class="d-flex flex-column h-100">
+
+
+<header th:replace="fragments/header :: header"></header>
+
+
+<main class="list-page">
+    <div class="list-card">
+
+        <h1 th:text="#{msg.user-list.title}"></h1>
+
+        <a th:href="@{/users/new}" class="btn btn-success" th:text="#{msg.user-list.add}"></a>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <table class="table table-bordered table-striped mt-3">
+            <thead>
+            <tr>
+                <th th:text="#{msg.user-list.id}"></th>
+                <th th:text="#{msg.user-list.username}"></th>
+                <th th:text="#{msg.user-list.active}"></th>
+                <th th:text="#{msg.user-list.accountNonLocked}"></th>
+                <th th:text="#{msg.user-list.lastPasswordChange}"></th>
+                <th th:text="#{msg.user-list.passwordExpiresAt}"></th>
+                <th th:text="#{msg.user-list.failedLoginAttempts}"></th>
+                <th th:text="#{msg.user-list.emailVerified}"></th>
+                <th th:text="#{msg.user-list.mustChangePassword}"></th>
+                <th th:text="#{msg.user-list.actions}"></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="user : ${listUsers}">
+                <td th:text="${user.id}"></td>
+                <td th:text="${user.username}"></td>
+                <td style="text-align: center;">
+                    <input type="checkbox" th:checked="${user.active}" disabled="disabled"/>
+                </td>
+                <td>
+                    <span th:if="${user.accountNonLocked}" th:text="#{msg.user-list.nonBlocked}"></span>
+                    <span th:unless="${user.accountNonLocked}" th:text="#{msg.user-list.blocked}"></span>
+                </td>
+                <td th:text="${user.lastPasswordChange}"></td>
+                <td th:text="${user.passwordExpiresAt}"></td>
+                <td th:text="${user.failedLoginAttempts}"></td>
+                <td style="text-align: center;">
+                    <input type="checkbox" th:checked="${user.emailVerified}" disabled="disabled"/>
+                </td>
+                <td style="text-align: center;">
+                    <input type="checkbox" th:checked="${user.mustChangePassword}" disabled="disabled"/>
+                </td>
+                <td>
+                    <a th:href="@{/users/edit(id=${user.id})}" class="btn btn-primary btn-sm" th:text="#{msg.user-list.edit}"></a>
+
+                    <form th:action="@{/users/delete}" method="post" class="d-inline">
+                        <input type="hidden" name="id" th:value="${user.id}" />
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                th:onclick="|return confirm(#{msg.user-list.confirm});|" th:text="#{msg.user-list.delete}">
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a th:href="@{/}" class="btn btn-secondary" th:text="#{msg.user-list.returnback}"></a>
+    </div>
+</main>
+
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+
+<div th:replace="fragments/scripts :: scripts"></div>
+
+
+</body>
+</html>
