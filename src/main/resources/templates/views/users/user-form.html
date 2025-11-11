@@ -9,7 +9,7 @@
 <main class="form-page">
     <div class="form-card">
 
-        <h1 th:text="${user.id == null ? @{users/insert} : @{users/edit}"></h1>
+        <h1 th:text="${user.id == null} ? @{users/insert} : @{users/edit} "></h1>
 
         <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
