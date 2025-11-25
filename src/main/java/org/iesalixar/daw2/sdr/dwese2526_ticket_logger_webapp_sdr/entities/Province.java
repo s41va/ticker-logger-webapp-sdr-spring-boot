@@ -3,6 +3,7 @@ package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,25 +38,20 @@ public class Province {
     private Long id;
 
     // Código único de la provincia (VARCHAR(10) NOT NULL UNIQUE).
-    @NotEmpty(message = "{msg.province.code.notEmpty}")
-    @Size(max = 10, message = "{msg.province.code.size}")
+
     @Column(name="code", nullable = false, length = 2)
     private String code;
 
     // Nombre de la provincia (VARCHAR(100) NOT NULL).
-    @NotEmpty(message = "{msg.province.name.notEmpty}")
-    @Size(max = 100, message = "{msg.province.name.size}")
+
     @Column(name="name", nullable = false, length = 100)
     private String name;
 
 
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id", nullable = false)
     private Region region;
 
-    @AssertTrue(message = "{msg.province.region.notnull}")
-    public boolean isRegionSelected(){
-        return region != null & region.getId()!=null;
-    }
 
 
     public Province(String code, String name, Region region) {

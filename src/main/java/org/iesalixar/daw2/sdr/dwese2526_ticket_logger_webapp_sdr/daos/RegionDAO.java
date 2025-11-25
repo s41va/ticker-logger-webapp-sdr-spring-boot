@@ -8,6 +8,9 @@ import java.util.List;
 public interface RegionDAO {
 
     List<Region> listAllRegions() ;
+    List<Region> listAllRegionsPage(int page, int size, String sortField, String sortDir);
+    long countRegion();
+
     void insertRegion(Region region) ;
 
     boolean existsRegionByCode(String code);

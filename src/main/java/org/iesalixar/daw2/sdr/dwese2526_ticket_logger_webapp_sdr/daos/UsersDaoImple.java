@@ -1,5 +1,6 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos;
 
+import jakarta.transaction.Transactional;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.Users;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,19 +21,16 @@ import java.util.List;
  * @author Salvador Diaz Roman
  * @version 2.0 (Adaptado a JdbcTemplate)
  */
+
 @Repository
 public class UsersDaoImple implements UsersDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(UsersDaoImple.class);
 
-    private final JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
-    /**
-     * 🛠️ Constructor que inyecta la dependencia de JdbcTemplate.
-     * @param jdbcTemplate el objeto JdbcTemplate proporcionado por Spring.
-     */
-    public UsersDaoImple(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public UsersDaoImple(JdbcTemplate jdbcTemplate){
+        this.jdbcTemplate=jdbcTemplate;
     }
 
     /**
