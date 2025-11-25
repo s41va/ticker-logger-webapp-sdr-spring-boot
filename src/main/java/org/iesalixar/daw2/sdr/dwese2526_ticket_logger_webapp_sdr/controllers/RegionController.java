@@ -58,7 +58,7 @@ public class RegionController {
            List<Region> listRegion = regionDAO.listAllRegionsPage(page, size, sortField, sortDir);
            List<RegionDTO> listRegionsDTOs = RegionMapper.toDTOList(listRegion);
             logger.info("Se han cargado {} regiones en la página {}", listRegionsDTOs.size(), page);
-            model.addAttribute("ListRegions", listRegionsDTOs);
+            model.addAttribute("listRegions", listRegionsDTOs);
             model.addAttribute("currentPage", page);
             model.addAttribute("pageSize", size);
             model.addAttribute("totalPages", totalPages);

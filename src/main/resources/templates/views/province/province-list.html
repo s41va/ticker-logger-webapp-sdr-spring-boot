@@ -51,6 +51,15 @@
                         <span class="ms-1" th:if="${sortField == 'name'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
                     </a>
                 </th>
+
+                <th>
+                    <a class="text-decoration-none"
+                       th:href="@{|/provinces(page=${currentPage},size=${pageSize},
+                    sortField='region',sortDir=${sortField == 'region' ? reverseSortDir : 'asc'})|}">
+                        <span th:text="#{msg.province-list.region}"></span>
+                        <span class="ms-1" th:if="${sortField == 'region'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                    </a>
+                </th>
                 <th th:text="#{msg.province-list.actions}"></th>
             </tr>
 
@@ -60,6 +69,7 @@
                 <td th:text="${province.id}"></td>
                 <td th:text="${province.code}"></td>
                 <td th:text="${province.name}"></td>
+
 
                 <td th:text="${province.regionName}"></td>
 

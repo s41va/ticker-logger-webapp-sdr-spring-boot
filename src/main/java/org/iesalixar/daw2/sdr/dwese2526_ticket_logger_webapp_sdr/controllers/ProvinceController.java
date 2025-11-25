@@ -58,7 +58,7 @@ public class ProvinceController {
             List<Province> entities = provinceDAO.listProvincesPage(page, size, sortField, sortDir);
             List<ProvinceDTO> listProvinceDTOs = ProvinceMapper.toDTOList(entities);
             logger.info("Se han cargado {} regiones en la página {}", listProvinceDTOs.size(), page);
-            model.addAttribute("ListRegions", listProvinceDTOs);
+            model.addAttribute("listProvinces", listProvinceDTOs);
             model.addAttribute("currentPage", page);
             model.addAttribute("pageSize", size);
             model.addAttribute("totalPages", totalPages);
