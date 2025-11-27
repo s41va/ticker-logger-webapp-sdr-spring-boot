@@ -1,13 +1,13 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos;
 
 
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.Users;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
 
 import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Interfaz que define las operaciones de acceso a datos (DAO) para la entidad {@link Users}.
+ * Interfaz que define las operaciones de acceso a datos (DAO) para la entidad {@link User}.
  * <p>
  * Proporciona los métodos necesarios para realizar operaciones CRUD
  * (crear, leer, actualizar y eliminar) sobre la tabla de usuarios en la base de datos.
@@ -31,18 +31,18 @@ public interface UsersDAO {
     /**
      * Obtiene una lista con todos los usuarios almacenados en la base de datos.
      *
-     * @return una lista de objetos {@link Users} representando todos los usuarios registrados.
+     * @return una lista de objetos {@link User} representando todos los usuarios registrados.
      * @throws SQLException si ocurre un error al realizar la consulta.
      */
-    List<Users> listAllUsers() ;
+    List<User> listAllUsers() ;
 
     /**
      * Inserta un nuevo usuario en la base de datos.
      *
-     * @param user el objeto {@link Users} que contiene la información del nuevo usuario a registrar.
+     * @param user el objeto {@link User} que contiene la información del nuevo usuario a registrar.
      * @throws SQLException si ocurre un error durante la inserción.
      */
-    void insertUser(Users user) ;
+    void insertUser(User user) ;
 
     /**
      * Verifica si existe un usuario con un nombre de usuario específico.
@@ -57,10 +57,10 @@ public interface UsersDAO {
      * Obtiene la información de un usuario a partir de su identificador único.
      *
      * @param id el identificador único del usuario.
-     * @return un objeto {@link Users} con la información del usuario, o {@code null} si no se encuentra.
+     * @return un objeto {@link User} con la información del usuario, o {@code null} si no se encuentra.
      * @throws SQLException si ocurre un error al realizar la consulta.
      */
-    Users getUsersById(long id) ;
+    User getUsersById(long id) ;
 
     /**
      * Elimina un usuario de la base de datos a partir de su identificador.
@@ -73,10 +73,10 @@ public interface UsersDAO {
     /**
      * Actualiza la información de un usuario existente en la base de datos.
      *
-     * @param updated el objeto {@link Users} que contiene los nuevos datos del usuario.
+     * @param updated el objeto {@link User} que contiene los nuevos datos del usuario.
      * @throws SQLException si ocurre un error durante la actualización.
      */
-    void updateUsers(Users updated) ;
+    void updateUsers(User updated) ;
 
     /**
      * Verifica si existe un usuario con un nombre de usuario específico,

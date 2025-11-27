@@ -1,15 +1,14 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.Users;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -21,29 +20,26 @@ import java.util.List;
  * @author Salvador Diaz Roman
  * @version 2.0 (Adaptado a JdbcTemplate)
  */
-
+@Transactional
 @Repository
 public class UsersDaoImple implements UsersDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(UsersDaoImple.class);
 
-    private JdbcTemplate jdbcTemplate;
-
-    public UsersDaoImple(JdbcTemplate jdbcTemplate){
-        this.jdbcTemplate=jdbcTemplate;
-    }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Obtiene una lista de todos los usuarios registrados en la base de datos.
      *
-     * @return una lista de objetos {@link Users} que representan todos los usuarios
+     * @return una lista de objetos {@link User} que representan todos los usuarios
      */
     @Override
-    public List<Users> listAllUsers() {
+    public List<User> listAllUsers() {
         logger.info("Entrando en el metodo listAllUsers");
-        String sql = "SELECT * FROM users";
+        String hql = "SELECT u FROM User u";
         // Usa BeanPropertyRowMapper para mapear automáticamente las columnas a los campos de la clase Users
-        List<Users> users = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Users.class));
+        List<User> users = entityManager.createQuery(hql, User.class).getResultList();
         logger.info("Retrieved {} users from the database", users.size());
         return users;
     }
@@ -51,30 +47,13 @@ public class UsersDaoImple implements UsersDAO {
     /**
      * Inserta un nuevo usuario en la base de datos.
      *
-     * @param user el objeto {@link Users} que contiene los datos del nuevo usuario
+     * @param user el objeto {@link User} que contiene los datos del nuevo usuario
      */
     @Override
-    public void insertUser(Users user) {
+    public void insertUser(User user) {
         logger.info("Insertando usuario: {}", user.getUsername());
-        String sql = """
-                INSERT INTO users (username, passwordHash, active,
-                accountNonLocked, lastPasswordChange, passwordExpiresAt,
-                failedLoginAttempts, emailVerified, mustChangePassword)
-                VALUES (?,?,?,?,?,?,?,?,?)
-                """;
-
-        int rowsAffected = jdbcTemplate.update(sql,
-                user.getUsername(),
-                user.getPasswordHash(),
-                user.isActive(),
-                user.isAccountNonLocked(),
-                user.getLastPasswordChange() != null ? Timestamp.valueOf(user.getLastPasswordChange()) : null,
-                user.getPasswordExpiresAt() != null ? Timestamp.valueOf(user.getPasswordExpiresAt()) : null,
-                user.getFailedLoginAttempts(),
-                user.isEmailVerified(),
-                user.isMustChangePassword());
-
-        logger.info("Inserted user. Rows affected: {}", rowsAffected);
+        entityManager.persist(user);
+        logger.info("Inserted user successful");
     }
 
     /**
@@ -86,10 +65,10 @@ public class UsersDaoImple implements UsersDAO {
     @Override
     public boolean existsUserByUsername(String username) {
         logger.info("Entrando en el metodo existsUserByUsername para: {}", username);
-        String sql = "SELECT COUNT(*) FROM users WHERE UPPER(username) = ?";
-
-        // queryForObject(sql, requiredType, args) simplifica la cuenta
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username.toUpperCase());
+        String hql = "SELECT COUNT(u) FROM User u WHERE u.username = :username";
+        Long count = entityManager.createQuery(hql, Long.class)
+                .setParameter("username", username)
+                .getSingleResult();
         boolean exists = count != null && count > 0;
 
         logger.info("User con username: {} existe: {}", username, exists);
@@ -100,22 +79,19 @@ public class UsersDaoImple implements UsersDAO {
      * Recupera un usuario por su identificador único (ID).
      *
      * @param id el identificador del usuario a buscar
-     * @return el objeto {@link Users} correspondiente al ID, o {@code null} si no existe
+     * @return el objeto {@link User} correspondiente al ID, o {@code null} si no existe
      */
     @Override
-    public Users getUsersById(long id) {
+    public User getUsersById(long id) {
         logger.info("Entrando en el metodo getUsersById para ID: {}", id);
-        String sql = "SELECT * FROM users WHERE id=?";
+        User users = entityManager.find(User.class, id);
 
-        try {
-            // queryForObject puede lanzar excepciones si no encuentra resultados
-            Users user = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Users.class), id);
-            logger.info(" Usuario encontrado con ID: {}", id);
-            return user;
-        } catch (Exception e) {
-            logger.warn("Usuario no encontrado con el siguiente id: {}", id);
-            return null;
+        if (users != null){
+            logger.info("Usuario encontrado: {} - {}", users.getId(), users.getUsername());
+        }else {
+            logger.warn("Ningun usuario encontrado con el id - {}", id);
         }
+        return users;
     }
 
     /**
@@ -126,46 +102,25 @@ public class UsersDaoImple implements UsersDAO {
     @Override
     public void deleteUsers(long id) {
         logger.info("Entrando al metodo deleteUsers para ID: {}", id);
-        String sql = "DELETE FROM users WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, id);
-        logger.info(" Deleted user with ID: {}. Rows affected: {}", id, rowsAffected);
+        User users = entityManager.find(User.class, id);
+        if (users != null){
+            entityManager.remove(users);
+            logger.info("Usuario eliminado correctamente");
+        }else{
+            logger.warn("Region con el  id = {} no ha podido ser encontrado", id);
+        }
     }
 
     /**
      * Actualiza los datos de un usuario existente en la base de datos.
      *
-     * @param user el objeto {@link Users} con los datos actualizados
+     * @param user el objeto {@link User} con los datos actualizados
      */
     @Override
-    public void updateUsers(Users user) {
+    public void updateUsers(User user) {
         logger.info(" Updating user with id: {}", user.getId());
-        String sql = """
-                UPDATE users SET
-                    username = ?,
-                    passwordHash = ?,
-                    active = ?,
-                    accountNonLocked = ?,
-                    lastPasswordChange = ?,
-                    passwordExpiresAt = ?,
-                    failedLoginAttempts = ?,
-                    emailVerified = ?,
-                    mustChangePassword = ?
-                WHERE id = ?
-                """;
-
-        int rowsAffected = jdbcTemplate.update(sql,
-                user.getUsername(),
-                user.getPasswordHash(),
-                user.isActive(),
-                user.isAccountNonLocked(),
-                user.getLastPasswordChange() != null ? Timestamp.valueOf(user.getLastPasswordChange()) : null,
-                user.getPasswordExpiresAt() != null ? Timestamp.valueOf(user.getPasswordExpiresAt()) : null,
-                user.getFailedLoginAttempts(),
-                user.isEmailVerified(),
-                user.isMustChangePassword(),
-                user.getId());
-
-        logger.info(" Updated user. Rows affected: {}", rowsAffected);
+        entityManager.merge(user);
+        logger.info(" Updated user successful" );
     }
 
     /**
@@ -179,8 +134,11 @@ public class UsersDaoImple implements UsersDAO {
     @Override
     public boolean existsUserByUsernameAndNotId(String username, long id) {
         logger.info(" Entrando al metodo existsUserByUsernameAndNotId para username: {} excluyendo ID: {}", username, id);
-        String sql = "SELECT COUNT(*) FROM users WHERE UPPER(username) = ? AND id != ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username.toUpperCase(), id);
+        String hql = "SELECT COUNT(u) FROM User u WHERE UPPER(u.username) = :username AND u.id != :id";
+        Long count = entityManager.createQuery(hql, Long.class)
+                .setParameter("username", username.toUpperCase())
+                .setParameter("id", id)
+                .getSingleResult();
         boolean exists = count != null && count > 0;
         logger.info(" User with username: {} exists excluding id: {}: {}", username, id, exists);
         return exists;

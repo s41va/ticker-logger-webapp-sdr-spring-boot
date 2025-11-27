@@ -1,37 +1,57 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
-public class Users {
+@Entity
+@Table(name = "users")
+public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // Constraints para username (varchar 40)
-    @NotEmpty(message = "{msg.user.username.notEmpty}")
-    @Size(max = 40, message = "{msg.user.username.size}")
+
+    @Column(name="username", nullable = false)
     private String username;
 
     // Constraints para passwordHash (varchar 500)
-    @NotEmpty(message = "{msg.user.passwordHash.notEmpty}")
-    @Size(max = 500, message = "{msg.user.passwordHash.size}")
+
+    @Column(name="password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name="active", nullable = false)
     private boolean active;
+
+    @Column(name = "account_non_locked", nullable = false)
     private boolean accountNonLocked;
+
+    @Column(name = "last_password_change", nullable = false)
     private LocalDateTime lastPasswordChange;
+
+    @Column(name = "password_expires_at", nullable = false)
     private LocalDateTime passwordExpiresAt;
+
+    @Column(name = "failed_login_attempts", nullable = false)
     private int failedLoginAttempts;
+
+    @Column(name = "email_verified", nullable = false)
     private boolean emailVerified;
+
+    @Column(name = "must_change_password", nullable = false)
     private boolean mustChangePassword;
+
+
+
+
+
+
 
     /**
      *
@@ -45,8 +65,8 @@ public class Users {
      * @param emailVerified (Boolean) → si el correo fue validado.
      * @param mustChangePassword (Boolean) → fuerza a cambiar la contraseña en el próximo login.
      */
-    public Users( String username, String passwordHash, boolean active, boolean accountNonLocked,
-                  LocalDateTime lastPasswordChange, LocalDateTime passwordExpiresAt, int failedLoginAttempts, boolean emailVerified, boolean mustChangePassword) {
+    public User(String username, String passwordHash, boolean active, boolean accountNonLocked,
+                LocalDateTime lastPasswordChange, LocalDateTime passwordExpiresAt, int failedLoginAttempts, boolean emailVerified, boolean mustChangePassword) {
         this.username = username;
         this.passwordHash = passwordHash;
         this.active = active;

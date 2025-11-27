@@ -2,7 +2,12 @@ package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.controllers;
 
 import jakarta.validation.Valid;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.UsersDAO;
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.Users;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersCreateDTO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDTO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDetailDTO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersUpdateDTO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.mappers.UsersMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +18,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
@@ -53,17 +57,44 @@ public class UsersController {
     @GetMapping
     public String listUsers(Model model) {
         logger.info(" Solicitando la lista de todos los usuarios...");
-        List<Users> listUsers = null;
+        List<User> listUsers = null;
+        List<UsersDTO> listUsersDTOs = null;
         try {
             listUsers = usersDAO.listAllUsers();
-            logger.info("Se han devuelto {} usuarios.", listUsers.size());
+            listUsersDTOs = UsersMapper.toDTOList(listUsers);
+            logger.info("Se han devuelto {} usuarios.", listUsersDTOs.size());
         } catch (Exception e) {
             logger.error(" Error al listar los usuarios: {}", e.getMessage());
             model.addAttribute("errorMessage", "Error al listar los usuarios.");
         }
-        model.addAttribute("listUsers", listUsers);
+        model.addAttribute("listUsers", listUsersDTOs);
         return "views/users/user-list";
     }
+
+    @GetMapping("/detail")
+    public String showDetail(@RequestParam("id")Long id,
+                             Model model,
+                             RedirectAttributes redirectAttributes,
+                             Locale locale){
+        logger.info("Mostrando detalle de la region con ID: {}", id);
+        try{
+            User users = usersDAO.getUsersById(id);
+            if (users == null){
+                String msg = messageSource.getMessage("msg.user-controller.detail.notFound", null, locale);
+                redirectAttributes.addFlashAttribute("errorMessage", msg);
+                return "redirect:/users";
+            }
+            UsersDetailDTO userDTO = UsersMapper.toDetailDTO(users);
+            model.addAttribute("user", userDTO);
+            return "views/users/user-detail";
+        }catch (Exception e){
+            logger.error("Error al obtener el detalle de la region {} : {}", id, e.getMessage(),e);
+            String msg = messageSource.getMessage("msg.user-controller.detail.error", null, locale);
+            redirectAttributes.addFlashAttribute("errorMessage", msg);
+            return "redirect:/users";
+        }
+    }
+
 
     /**
      * Muestra el formulario para crear un nuevo usuario. (Equivalente a doGet, action=new)
@@ -76,7 +107,7 @@ public class UsersController {
     public String showNewForm(Model model) {
         logger.info(" Mostrando el formulario para nuevo usuario.");
         // Se crea un objeto Users vacío para enlazar los datos del formulario
-        model.addAttribute("user", new Users());
+        model.addAttribute("user", new UsersCreateDTO());
         return "views/users/user-form";
     }
 
@@ -91,8 +122,8 @@ public class UsersController {
     @GetMapping("/edit")
     public String showEditForm(@RequestParam("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         logger.info(" Entrando al método showEditForm para ID: {}", id);
-        Users user = null;
-
+        User user = null;
+        UsersUpdateDTO usersDTO = null;
         try {
             user = usersDAO.getUsersById(id);
             if (user == null) {
@@ -100,12 +131,13 @@ public class UsersController {
                 redirectAttributes.addFlashAttribute("errorMessage", "Usuario no encontrado.");
                 return "redirect:/users";
             }
+            usersDTO = UsersMapper.toUpdateDTO(user);
         } catch (Exception e) {
             logger.error(" Error al obtener el usuario con Id {} :{}", id, e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al cargar el usuario.");
             return "redirect:/users";
         }
-        model.addAttribute("user", user);
+        model.addAttribute("user", usersDTO);
         return "views/users/user-form";
     }
 
@@ -115,51 +147,58 @@ public class UsersController {
      * Inserta un nuevo usuario en la base de datos. (Equivalente a doPost, action=insert)
      * URL: /users/insert
      *
-     * @param user El objeto Users con los datos del formulario (debe tener las validaciones JSR-303).
+     * @param userDTO El objeto Users con los datos del formulario (debe tener las validaciones JSR-303).
      * @param result El resultado del proceso de validación.
      * @param redirectAttributes Atributos para mensajes flash (mensajes de éxito/error después de la redirección).
      * @param locale La configuración regional para mensajes internacionalizados.
      * @return Redirección a la lista de usuarios.
      */
     @PostMapping("/insert")
-    public String insertUsers(@ModelAttribute("user") Users user, BindingResult result, RedirectAttributes redirectAttributes, Locale locale) {
-        logger.info(" Insertando nuevo usuario: {}", user.getUsername());
+    public String insertUsers(@ModelAttribute("user")
+                                  UsersCreateDTO userDTO,
+                              BindingResult result,
+                              RedirectAttributes redirectAttributes, Locale locale) {
+        logger.info(" Insertando nuevo usuario: {}", userDTO.getUsername());
 
         // **Validaciones JSR-303 (si estuvieran implementadas en Users.java)**
-        if (result.hasErrors()) {
-            return "views/users/user-form"; // Vuelve al formulario con errores de campo
-        }
+
 
         try {
+
+            if (result.hasErrors()) {
+                return "user-form"; // Vuelve al formulario con errores de campo
+            }
+
             // **Validación de unicidad de username**
-            if (usersDAO.existsUserByUsername(user.getUsername())) {
-                logger.warn("El username {} ya existe.", user.getUsername());
+            if (usersDAO.existsUserByUsername(userDTO.getUsername())) {
+                logger.warn("El username {} ya existe.", userDTO.getUsername());
                 // Usar messageSource para el mensaje de error si está configurado
-                // String errorMessage = messageSource.getMessage("msg.user-controller.insert.usernameExist", null, locale);
-                redirectAttributes.addFlashAttribute("errorMessage", "El username ya existe. Por favor, elija otro.");
-                redirectAttributes.addFlashAttribute("user", user); // Mantener datos
+                String errorMessage = messageSource.getMessage("msg.user-controller.insert.usernameExist", null, locale);
+                redirectAttributes.addFlashAttribute("errorMessage", errorMessage); // Mantener datos
                 return "redirect:/users/new";
             }
 
             // **Lógica de negocio del UserServlet: Calcular passwordExpiresAt**
-            if (user.getLastPasswordChange() != null) {
-                user.setPasswordExpiresAt(user.getLastPasswordChange().plusMonths(3));
+            if (userDTO.getLastPasswordChange() != null) {
+                userDTO.setPasswordExpiresAt(userDTO.getLastPasswordChange().plusMonths(3));
             } else {
                 // Si la fecha es null, se establece la actual y se calcula la expiración
                 LocalDateTime now = LocalDateTime.now();
-                user.setLastPasswordChange(now);
-                user.setPasswordExpiresAt(now.plusMonths(3));
+                userDTO.setLastPasswordChange(now);
+                userDTO.setPasswordExpiresAt(now.plusMonths(3));
             }
-
+            User user = UsersMapper.toEntity(userDTO);
             usersDAO.insertUser(user);
             logger.info(" Usuario '{}' insertado con éxito.", user.getUsername());
-            redirectAttributes.addFlashAttribute("successMessage", "Usuario creado con éxito.");
+            String successMessage = messageSource.getMessage("msg.user-controller.insert.success", null, locale);
+            redirectAttributes.addFlashAttribute("successMessage", successMessage);
 
         } catch (Exception e) {
-            logger.error(" Error al insertar el usuario {}: {}", user.getUsername(), e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Error al crear el usuario. Por favor, revise los datos.");
+            logger.error(" Error al insertar el usuario {}: {}", userDTO.getUsername(), e.getMessage());
+            String errorMessage = messageSource.getMessage("msg.user-controller.insert.error", null, locale);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
             // Agregar el objeto 'user' de nuevo para rellenar el formulario
-            redirectAttributes.addFlashAttribute("user", user);
+
             return "redirect:/users/new";
         }
         return "redirect:/users";
@@ -169,46 +208,51 @@ public class UsersController {
      * Actualiza un usuario existente en la base de datos. (Equivalente a doPost, action=update)
      * URL: /users/update
      *
-     * @param user Objeto Users con los datos actualizados.
+     * @param userDTO Objeto Users con los datos actualizados.
      * @param result Resultado de la validación.
      * @param redirectAttributes Atributos para mensajes flash.
      * @param locale Configuración regional.
      * @return Redirección a la lista de usuarios.
      */
     @PostMapping("/update")
-    public String updateUsers(@ModelAttribute("user") Users user, BindingResult result, RedirectAttributes redirectAttributes, Locale locale) {
-        logger.info(" Actualizando usuario con ID {}", user.getId());
+    public String updateUsers(@Valid @ModelAttribute("user") UsersUpdateDTO userDTO, BindingResult result, RedirectAttributes redirectAttributes, Locale locale) {
+        logger.info(" Actualizando usuario con ID {}", userDTO.getId());
 
-        // **Validaciones JSR-303 (si estuvieran implementadas en Users.java)**
-        if (result.hasErrors()) {
-            return "views/users/user-form"; // Vuelve al formulario con errores de campo
-        }
+
 
         try {
-            // **Validación de unicidad de username (excluyendo el ID actual)**
-            if (usersDAO.existsUserByUsernameAndNotId(user.getUsername(), user.getId())) {
-                logger.warn("El username {} ya existe para otro usuario.", user.getUsername());
-                redirectAttributes.addFlashAttribute("errorMessage", "El username ya existe para otro usuario.");
-                return "redirect:/users/edit?id=" + user.getId();
+            // **Validaciones JSR-303 (si estuvieran implementadas en Users.java)**
+            if (result.hasErrors()) {
+                return "views/users/user-form"; // Vuelve al formulario con errores de campo
             }
+            // **Validación de unicidad de username (excluyendo el ID actual)**
+            if (usersDAO.existsUserByUsernameAndNotId(userDTO.getUsername(), userDTO.getId())) {
+                logger.warn("El username {} ya existe para otro usuario.", userDTO.getUsername());
+                String errorMessage = messageSource.getMessage("msg.user-controller.update.userExists", null, locale);
+                redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+                return "redirect:/users/edit?id=" + userDTO.getId();
+            }
+
+            User user = usersDAO.getUsersById(userDTO.getId());
 
             // **Lógica de negocio del UserServlet: Recalcular passwordExpiresAt**
-            if (user.getLastPasswordChange() != null) {
-                user.setPasswordExpiresAt(user.getLastPasswordChange().plusMonths(3));
-            } else {
-                // Debería ser muy raro en un update, pero previene NPE
-                user.setLastPasswordChange(LocalDateTime.now());
-                user.setPasswordExpiresAt(LocalDateTime.now().plusMonths(3));
+            if (user == null) {
+                logger.warn("No se encontró el usuario con ID - {}", userDTO.getId());
+                String notFound = messageSource.getMessage("msg.user-controller.update.notFound", null, locale );
+                redirectAttributes.addFlashAttribute("errorMessage", notFound);
+                return "redirect:/users";
             }
 
+            UsersMapper.copyToExistingEntity(userDTO, user);
             usersDAO.updateUsers(user);
             logger.info(" Usuario con ID {} actualizado con éxito.", user.getId());
-            redirectAttributes.addFlashAttribute("successMessage", "Usuario actualizado con éxito.");
+
 
         } catch (Exception e) {
-            logger.error(" Error al actualizar el usuario con ID {}: {}", user.getId(), e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar el usuario. Revise los datos.");
-            return "redirect:/users/edit?id=" + user.getId();
+            logger.error(" Error al actualizar el usuario con ID {}: {}", userDTO.getId(), e.getMessage());
+            String errorMessage = messageSource.getMessage("msg.user-controller.update.error", null, locale);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+
         }
         return "redirect:/users";
     }

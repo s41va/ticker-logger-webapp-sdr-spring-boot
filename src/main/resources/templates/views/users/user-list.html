@@ -53,6 +53,11 @@
                     <input type="checkbox" th:checked="${user.mustChangePassword}" disabled="disabled"/>
                 </td>
                 <td>
+
+                    <a th:href="@{/users/detail(id=${user.id})}"
+                       class="btn btn-primary btn-sm"
+                       th:text="#{msg.user-list.viewDetail}"></a>
+
                     <a th:href="@{/users/edit(id=${user.id})}" class="btn btn-primary btn-sm" th:text="#{msg.user-list.edit}"></a>
 
                     <form th:action="@{/users/delete}" method="post" class="d-inline">
