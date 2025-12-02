@@ -39,7 +39,7 @@ public class User {
     private LocalDateTime passwordExpiresAt;
 
     @Column(name = "failed_login_attempts", nullable = false)
-    private int failedLoginAttempts;
+    private Integer failedLoginAttempts;
 
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified;

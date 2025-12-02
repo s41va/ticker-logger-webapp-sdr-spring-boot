@@ -160,8 +160,6 @@ public class UsersController {
                               RedirectAttributes redirectAttributes, Locale locale) {
         logger.info(" Insertando nuevo usuario: {}", userDTO.getUsername());
 
-        // **Validaciones JSR-303 (si estuvieran implementadas en Users.java)**
-
 
         try {
 
@@ -218,8 +216,6 @@ public class UsersController {
     public String updateUsers(@Valid @ModelAttribute("user") UsersUpdateDTO userDTO, BindingResult result, RedirectAttributes redirectAttributes, Locale locale) {
         logger.info(" Actualizando usuario con ID {}", userDTO.getId());
 
-
-
         try {
             // **Validaciones JSR-303 (si estuvieran implementadas en Users.java)**
             if (result.hasErrors()) {
@@ -233,19 +229,15 @@ public class UsersController {
                 return "redirect:/users/edit?id=" + userDTO.getId();
             }
 
-            User user = usersDAO.getUsersById(userDTO.getId());
+            User existingUser = usersDAO.getUsersById(userDTO.getId());
 
-            // **Lógica de negocio del UserServlet: Recalcular passwordExpiresAt**
-            if (user == null) {
-                logger.warn("No se encontró el usuario con ID - {}", userDTO.getId());
-                String notFound = messageSource.getMessage("msg.user-controller.update.notFound", null, locale );
-                redirectAttributes.addFlashAttribute("errorMessage", notFound);
+            if (existingUser == null){
                 return "redirect:/users";
             }
 
-            UsersMapper.copyToExistingEntity(userDTO, user);
-            usersDAO.updateUsers(user);
-            logger.info(" Usuario con ID {} actualizado con éxito.", user.getId());
+            UsersMapper.copyToExistingEntity(userDTO, existingUser);
+            usersDAO.updateUsers(existingUser);
+            logger.info(" Usuario con ID {} actualizado con éxito.", existingUser.getId());
 
 
         } catch (Exception e) {

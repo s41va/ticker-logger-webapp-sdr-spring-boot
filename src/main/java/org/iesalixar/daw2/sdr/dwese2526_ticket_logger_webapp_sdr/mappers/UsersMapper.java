@@ -20,9 +20,13 @@ public class UsersMapper {
         dto.setId(entity.getId());
         dto.setUsername(entity.getUsername());
         // Se omiten la contraseña (passwordHash) y campos de tiempo muy específicos para una vista simple.
+        dto.setLastPasswordChange(entity.getLastPasswordChange());
+        dto.setPasswordExpiresAt(entity.getPasswordExpiresAt());
+        dto.setFailedLoginAttempts(entity.getFailedLoginAttempts());
         dto.setActive(entity.isActive()); // Se incluye el estado de actividad
         dto.setAccountNonLocked(entity.isAccountNonLocked()); // Se incluye el estado de bloqueo
         dto.setEmailVerified(entity.isEmailVerified()); // Se incluye el estado de verificación
+        dto.setMustChangePassword(entity.isMustChangePassword());
         return dto;
     }
 
@@ -74,10 +78,12 @@ public class UsersMapper {
         e.setUsername(dto.getUsername());
 
         // Los campos de seguridad/estado se suelen inicializar en el servicio o constructor:
-        // e.setPasswordHash(dto.getInitialPasswordHash()); // Se manejaría en el servicio
+        e.setPasswordHash(dto.getPasswordHash()); // Se manejaría en el servicio
         e.setActive(true); // El usuario está activo por defecto
         e.setAccountNonLocked(true); // No bloqueado por defecto
-        e.setFailedLoginAttempts(0); // Intentos a cero
+        e.setLastPasswordChange(dto.getLastPasswordChange());
+        e.setPasswordExpiresAt(dto.getPasswordExpiresAt());
+        e.setFailedLoginAttempts(dto.getFailedLoginAttempts()); // Intentos a cero
         e.setEmailVerified(false); // Pendiente de verificación
         e.setMustChangePassword(true); // Se fuerza el cambio si se genera una contraseña temporal
         // Las fechas de cambio/expiración se establecen en el servicio
@@ -99,6 +105,8 @@ public class UsersMapper {
         dto.setUsername(entity.getUsername());
 
         // Campos de estado que un administrador podría querer actualizar
+        dto.setLastPasswordChange(entity.getLastPasswordChange());
+        dto.setPasswordExpiresAt(entity.getPasswordExpiresAt());
         dto.setActive(entity.isActive());
         dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setEmailVerified(entity.isEmailVerified());
@@ -125,6 +133,9 @@ public class UsersMapper {
         entity.setEmailVerified(dto.getEmailVerified());
         entity.setMustChangePassword(dto.getMustChangePassword());
 
+        if (dto.getFailedLoginAttempts() != null ) entity.setFailedLoginAttempts(dto.getFailedLoginAttempts());
+        if (dto.getLastPasswordChange() != null) entity.setLastPasswordChange(dto.getLastPasswordChange());
+        if (dto.getPasswordExpiresAt() != null ) entity.setPasswordExpiresAt(dto.getPasswordExpiresAt());
         // NOTA: Los campos failedLoginAttempts, passwordHash y las fechas
         // NO deberían mapearse directamente, sino ser gestionados en la capa de Servicio.
         // Ej: Si accountNonLocked cambia a true, el Servicio reiniciaría failedLoginAttempts.

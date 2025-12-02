@@ -32,7 +32,7 @@ public class UsersCreateDTO {
     // @NotBlank(message = "{msg.user.passwordHash.notEmpty}")
     // @Size(max = 500, message = "{msg.user.passwordHash.size}") // Usando el constraint (varchar 500)
     @NotBlank(message = "{msg.user.passwordHash.notEmpty}")
-    @Size(max = 100, message = "msg.user.passwordHash.size")
+    @Size(max = 100, message = "{msg.user.passwordHash.size}")
     private String passwordHash;
 
     // 🟢 Estado de la cuenta (los booleanos se validan con @NotNull si es obligatorio en un DTO)

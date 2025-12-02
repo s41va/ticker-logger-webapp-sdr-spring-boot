@@ -38,7 +38,6 @@ public class UsersDaoImple implements UsersDAO {
     public List<User> listAllUsers() {
         logger.info("Entrando en el metodo listAllUsers");
         String hql = "SELECT u FROM User u";
-        // Usa BeanPropertyRowMapper para mapear automáticamente las columnas a los campos de la clase Users
         List<User> users = entityManager.createQuery(hql, User.class).getResultList();
         logger.info("Retrieved {} users from the database", users.size());
         return users;
