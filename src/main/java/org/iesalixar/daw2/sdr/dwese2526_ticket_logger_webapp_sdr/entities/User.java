@@ -3,6 +3,7 @@ package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import javax.swing.text.StyledEditorKit;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -16,38 +17,38 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Constraints para username (varchar 40)
+    @Column(name = "email", nullable = false, unique = true, length = 40)
+    private String email;
 
-    @Column(name="username", nullable = false)
-    private String username;
 
     // Constraints para passwordHash (varchar 500)
 
-    @Column(name="password_hash", nullable = false)
+    @Column(name="password_hash", nullable = false, length = 500)
     private String passwordHash;
 
     @Column(name="active", nullable = false)
-    private boolean active;
+    private boolean active = Boolean.TRUE;
 
     @Column(name = "account_non_locked", nullable = false)
-    private boolean accountNonLocked;
+    private boolean accountNonLocked = Boolean.TRUE;
 
-    @Column(name = "last_password_change", nullable = false)
+    @Column(name = "last_password_change")
     private LocalDateTime lastPasswordChange;
 
-    @Column(name = "password_expires_at", nullable = false)
+    @Column(name = "password_expires_at")
     private LocalDateTime passwordExpiresAt;
 
     @Column(name = "failed_login_attempts", nullable = false)
     private Integer failedLoginAttempts;
 
     @Column(name = "email_verified", nullable = false)
-    private boolean emailVerified;
+    private boolean emailVerified = Boolean.FALSE;
 
     @Column(name = "must_change_password", nullable = false)
-    private boolean mustChangePassword;
+    private boolean mustChangePassword = Boolean.FALSE;
 
-
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private UserProfile profile;
 
 
 
@@ -55,7 +56,7 @@ public class User {
 
     /**
      *
-     * @param username (varchar 40) → identificador único de login.
+     * @param email (varchar 40) → identificador único de login.
      * @param passwordHash (varchar 500)→ contraseña de momento en texto plano.
      * @param active (Boolean)→ indica si la cuenta está activa o bloqueada.
      * @param accountNonLocked (Boolean)→ campo para saber si una cuenta está bloqueada por intentos fallidos.
@@ -65,9 +66,9 @@ public class User {
      * @param emailVerified (Boolean) → si el correo fue validado.
      * @param mustChangePassword (Boolean) → fuerza a cambiar la contraseña en el próximo login.
      */
-    public User(String username, String passwordHash, boolean active, boolean accountNonLocked,
+    public User(String email, String passwordHash, boolean active, boolean accountNonLocked,
                 LocalDateTime lastPasswordChange, LocalDateTime passwordExpiresAt, int failedLoginAttempts, boolean emailVerified, boolean mustChangePassword) {
-        this.username = username;
+        this.email = email;
         this.passwordHash = passwordHash;
         this.active = active;
         this.accountNonLocked = accountNonLocked;

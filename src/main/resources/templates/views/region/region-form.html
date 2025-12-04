@@ -19,7 +19,7 @@
         <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
         <form th:action="${region.id == null ? '/regions/insert' : '/regions/update' }"
-              th:object="${region}" method="post" class="mt-3">
+              th:object="${region}" enctype="multipart/form-data" method="post" class="mt-3">
 
             <input type="hidden" th:field="*{id}" />
 

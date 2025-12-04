@@ -21,9 +21,9 @@ public class UsersCreateDTO {
     private Long id;
 
     // 👤 Username
-    @NotBlank(message = "{msg.user.username.notEmpty}")
-    @Size(max = 40, message = "{msg.user.username.size}") // Usando el constraint (varchar 40)
-    private String username;
+    @NotBlank(message = "{msg.user.email.notEmpty}")
+    @Size(max = 40, message = "{msg.user.email.size}") // Usando el constraint (varchar 40)
+    private String email;
 
     // 🔒 Password Hash (solo relevante para la entidad/almacenamiento)
     // Este campo no suele validarse directamente en los DTOs de entrada,

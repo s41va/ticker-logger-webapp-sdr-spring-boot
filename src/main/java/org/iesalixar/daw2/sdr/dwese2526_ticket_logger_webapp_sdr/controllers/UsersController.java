@@ -158,7 +158,7 @@ public class UsersController {
                                   UsersCreateDTO userDTO,
                               BindingResult result,
                               RedirectAttributes redirectAttributes, Locale locale) {
-        logger.info(" Insertando nuevo usuario: {}", userDTO.getUsername());
+        logger.info(" Insertando nuevo usuario: {}", userDTO.getEmail());
 
 
         try {
@@ -168,8 +168,8 @@ public class UsersController {
             }
 
             // **Validación de unicidad de username**
-            if (usersDAO.existsUserByUsername(userDTO.getUsername())) {
-                logger.warn("El username {} ya existe.", userDTO.getUsername());
+            if (usersDAO.existsUserByEmail(userDTO.getEmail())) {
+                logger.warn("El email {} ya existe.", userDTO.getEmail());
                 // Usar messageSource para el mensaje de error si está configurado
                 String errorMessage = messageSource.getMessage("msg.user-controller.insert.usernameExist", null, locale);
                 redirectAttributes.addFlashAttribute("errorMessage", errorMessage); // Mantener datos
@@ -187,12 +187,12 @@ public class UsersController {
             }
             User user = UsersMapper.toEntity(userDTO);
             usersDAO.insertUser(user);
-            logger.info(" Usuario '{}' insertado con éxito.", user.getUsername());
+            logger.info(" Usuario '{}' insertado con éxito.", user.getEmail());
             String successMessage = messageSource.getMessage("msg.user-controller.insert.success", null, locale);
             redirectAttributes.addFlashAttribute("successMessage", successMessage);
 
         } catch (Exception e) {
-            logger.error(" Error al insertar el usuario {}: {}", userDTO.getUsername(), e.getMessage());
+            logger.error(" Error al insertar el usuario {}: {}", userDTO.getEmail(), e.getMessage());
             String errorMessage = messageSource.getMessage("msg.user-controller.insert.error", null, locale);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
             // Agregar el objeto 'user' de nuevo para rellenar el formulario
@@ -222,8 +222,8 @@ public class UsersController {
                 return "views/users/user-form"; // Vuelve al formulario con errores de campo
             }
             // **Validación de unicidad de username (excluyendo el ID actual)**
-            if (usersDAO.existsUserByUsernameAndNotId(userDTO.getUsername(), userDTO.getId())) {
-                logger.warn("El username {} ya existe para otro usuario.", userDTO.getUsername());
+            if (usersDAO.existsUserByEmailAndNotId(userDTO.getEmail(), userDTO.getId())) {
+                logger.warn("El email {} ya existe para otro usuario.", userDTO.getEmail());
                 String errorMessage = messageSource.getMessage("msg.user-controller.update.userExists", null, locale);
                 redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
                 return "redirect:/users/edit?id=" + userDTO.getId();
