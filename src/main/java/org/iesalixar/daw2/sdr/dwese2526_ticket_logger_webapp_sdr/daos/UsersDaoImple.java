@@ -74,7 +74,7 @@ public class UsersDaoImple implements UsersDAO {
     @Override
     public boolean existsUserByEmail(String email) {
         logger.info("Entrando en el metodo existsUserByEmail para: {}", email);
-        String hql = "SELECT COUNT(u) FROM User u WHERE u.username = :username";
+        String hql = "SELECT COUNT(u) FROM User u WHERE u.email = :email";
         Long count = entityManager.createQuery(hql, Long.class)
                 .setParameter("email", email)
                 .getSingleResult();

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -138,6 +139,16 @@ public class UserProfileController {
 
                 // Actualizar en el DTO la ruta de la imagen
                 profileDto.setProfileImage(newImageWebPath);
+
+                if (oldImagePath != null && !oldImagePath.isBlank()){
+                    logger.info("Eliminando imagen anterior del perfil: {}", oldImagePath);
+                    fileStorageService.deleteFile(oldImagePath);
+                }
+            }
+            if (isNew){
+                userProfile = UserProfileMapper.toNewEntity(profileDto, user);
+            }else {
+                UserProfileMapper.copyToExistingEntity(profileDto, userProfile);
             }
             userProfileDAO.saveOrUpdateUserProfile(userProfile);
             String successMessage = messageSource.getMessage("msg.userProfile.success", null, locale);

@@ -20,7 +20,7 @@
             <thead>
             <tr>
                 <th th:text="#{msg.user-list.id}"></th>
-                <th th:text="#{msg.user-list.username}"></th>
+                <th th:text="#{msg.user-list.email}"></th>
                 <th th:text="#{msg.user-list.active}"></th>
                 <th th:text="#{msg.user-list.accountNonLocked}"></th>
                 <th th:text="#{msg.user-list.lastPasswordChange}"></th>
@@ -35,7 +35,7 @@
             <tbody>
             <tr th:each="user : ${listUsers}">
                 <td th:text="${user.id}"></td>
-                <td th:text="${user.username}"></td>
+                <td th:text="${user.email}"></td>
                 <td style="text-align: center;">
                     <input type="checkbox" th:checked="${user.active}" disabled="disabled"/>
                 </td>
