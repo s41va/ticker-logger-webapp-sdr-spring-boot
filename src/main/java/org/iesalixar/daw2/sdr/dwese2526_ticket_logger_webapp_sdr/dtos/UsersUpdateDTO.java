@@ -2,6 +2,7 @@ package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -49,4 +52,7 @@ public class UsersUpdateDTO {
 
     @NotNull(message = "{msg.user.mustChangePassword.notNull}")
     private Boolean mustChangePassword;
+
+    @NotEmpty(message = "{msg.user.roles.notEmpty}")
+    private Set<Long> roleIds = new HashSet<>();
 }

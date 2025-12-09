@@ -71,6 +71,23 @@
                 <div th:if="${#fields.hasErrors('mustChangePassword')}" class="text-danger" th:errors="*{mustChangePassword}"></div>
             </div>
 
+            <div class="mb-3">
+                <label for="roles" class="form-label"
+                       th:text="#{msg.user-form.roles}">Roles</label>
+                <select id="roles"
+                        class="form-select"
+                        multiple
+                        th:field="*{rolesIds}">
+
+                        <option th:each="role : ${allRoles}"
+                                th:value="${role.id}"
+                                th:text="${role.displayName} + ' (' + ${role.name} + ')' ">
+
+                        </option>
+
+                </select>
+            </div>
+
             <button type="submit" class="btn btn-primary"
                     th:text="${user.id == null} ? #{msg.user-form.create} : #{msg.user-form.update}"></button>
 

@@ -1,6 +1,7 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.controllers;
 
 import jakarta.validation.Valid;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.RoleDAO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.UsersDAO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersCreateDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDTO;
@@ -11,6 +12,7 @@ import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.mappers.UsersMa
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,6 +44,9 @@ public class UsersController {
 
     @Autowired
     private UsersDAO usersDAO;
+
+    @Autowired
+    private RoleDAO roleDAO;
 
     @Autowired
     private MessageSource messageSource; // Para mensajes de internacionalización/error
@@ -108,6 +114,7 @@ public class UsersController {
         logger.info(" Mostrando el formulario para nuevo usuario.");
         // Se crea un objeto Users vacío para enlazar los datos del formulario
         model.addAttribute("user", new UsersCreateDTO());
+        model.addAttribute("allRoles", roleDAO.listAllRoles());
         return "views/users/user-form";
     }
 
@@ -137,7 +144,7 @@ public class UsersController {
             redirectAttributes.addFlashAttribute("errorMessage", "Error al cargar el usuario.");
             return "redirect:/users";
         }
-        model.addAttribute("user", usersDTO);
+        model.addAttribute("allRoles", roleDAO.listAllRoles());
         return "views/users/user-form";
     }
 
@@ -156,6 +163,7 @@ public class UsersController {
     @PostMapping("/insert")
     public String insertUsers(@ModelAttribute("user")
                                   UsersCreateDTO userDTO,
+                              Model model,
                               BindingResult result,
                               RedirectAttributes redirectAttributes, Locale locale) {
         logger.info(" Insertando nuevo usuario: {}", userDTO.getEmail());
@@ -164,6 +172,7 @@ public class UsersController {
         try {
 
             if (result.hasErrors()) {
+                model.addAttribute("allRoles", roleDAO.listAllRoles());
                 return "user-form"; // Vuelve al formulario con errores de campo
             }
 
@@ -185,7 +194,8 @@ public class UsersController {
                 userDTO.setLastPasswordChange(now);
                 userDTO.setPasswordExpiresAt(now.plusMonths(3));
             }
-            User user = UsersMapper.toEntity(userDTO);
+            var roles = new HashSet<>(roleDAO.findAllByIds(userDTO.getRoleIds()));
+            User user = UsersMapper.toEntity(userDTO, roles);
             usersDAO.insertUser(user);
             logger.info(" Usuario '{}' insertado con éxito.", user.getEmail());
             String successMessage = messageSource.getMessage("msg.user-controller.insert.success", null, locale);
@@ -228,16 +238,19 @@ public class UsersController {
                 redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
                 return "redirect:/users/edit?id=" + userDTO.getId();
             }
+//
+//            LocalDateTime lastPasswordChange = userDTO.getLastPasswordChange();
+//            if (lastPasswordChange == null){
+//                lastPasswordChange = LocalDateTime.now();
+//                userDTO.setLastPasswordChange(lastPasswordChange);
+//            }
+//            LocalDateTime passwordExpiresAt = lastPasswordChange.plusDays(PASSWORD_EXPIRY_DAYS);
+//            userDTO.setPasswordExpiresAt(passwordExpiresAt);
 
-            User existingUser = usersDAO.getUsersById(userDTO.getId());
-
-            if (existingUser == null){
-                return "redirect:/users";
-            }
-
-            UsersMapper.copyToExistingEntity(userDTO, existingUser);
-            usersDAO.updateUsers(existingUser);
-            logger.info(" Usuario con ID {} actualizado con éxito.", existingUser.getId());
+            var roles = new HashSet<>(roleDAO.findAllByIds(userDTO.getRoleIds()));
+            User user = UsersMapper.toEntity(userDTO, roles);
+            usersDAO.updateUsers(user);
+            logger.info(" Usuario con ID {} actualizado con éxito.", user.getId());
 
 
         } catch (Exception e) {

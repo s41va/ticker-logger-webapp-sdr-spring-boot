@@ -29,6 +29,7 @@
                 <th th:text="#{msg.user-list.emailVerified}"></th>
                 <th th:text="#{msg.user-list.mustChangePassword}"></th>
                 <th th:text="#{msg.user-list.actions}"></th>
+                <th th:text="#{msg.user-list.roles}">Roles</th>
             </tr>
             </thead>
 
@@ -52,6 +53,7 @@
                 <td style="text-align: center;">
                     <input type="checkbox" th:checked="${user.mustChangePassword}" disabled="disabled"/>
                 </td>
+                <td th:text="${#lists.isEmpty(user.roles)} ? '-' : ${#strings.listJoin(user.roles, ', ')}"></td>
                 <td>
 
                     <a th:href="@{/users/detail(id=${user.id})}"

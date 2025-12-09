@@ -4,10 +4,14 @@ import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersCreat
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDetailDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersUpdateDTO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.Role;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.UserProfile;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class UsersMapper {
 
@@ -28,6 +32,16 @@ public class UsersMapper {
         dto.setAccountNonLocked(entity.isAccountNonLocked()); // Se incluye el estado de bloqueo
         dto.setEmailVerified(entity.isEmailVerified()); // Se incluye el estado de verificación
         dto.setMustChangePassword(entity.isMustChangePassword());
+
+        if (entity.getRoles() != null && !entity.getRoles().isEmpty()) {
+            Set<String> roleNames = entity.getRoles().stream()
+                    .map(Role::getName) // o Role::getDisplayName si prefieres
+                    .collect(Collectors.toSet());
+            dto.setRoles(roleNames);
+        } else {
+            dto.setRoles(new HashSet<>());
+        }
+
         return dto;
     }
 
@@ -75,6 +89,15 @@ public class UsersMapper {
 
         // Asume que el campo 'roles' existe en la entidad User
         // dto.setRoles(toRoleList(entity.getRoles()));
+
+        if (entity.getRoles() != null && !entity.getRoles().isEmpty()){
+            Set<String> roleNames = entity.getRoles().stream()
+                    .map(Role::getName)
+                    .collect(Collectors.toSet());
+            dto.setRoles(roleNames);
+        }else{
+            dto.setRoles(new HashSet<>());
+        }
         return dto;
     }
 
@@ -107,6 +130,22 @@ public class UsersMapper {
     //
     // Entity -> UpdateDTO
     //
+    public static User toEntity(UsersUpdateDTO dto){
+        if (dto == null) return null;
+
+        User e = new User();
+        e.setId(dto.getId());
+        e.setEmail(dto.getEmail());
+        e.setActive(dto.getActive()); // El usuario está activo por defecto
+        e.setAccountNonLocked(dto.getAccountNonLocked()); // No bloqueado por defecto
+        e.setEmailVerified(dto.getEmailVerified()); // Pendiente de verificación
+        e.setMustChangePassword(dto.getMustChangePassword()); // Se fuerza el cambio si se genera una contraseña temporal
+        // Las fechas de cambio/expiración se establecen en el servicio
+
+        return e;
+    }
+
+
     /**
      * Convierte una entidad {@link User} a {@link UsersUpdateDTO}.
      * Este DTO es útil para recuperar el estado actual para una edición.
@@ -124,6 +163,13 @@ public class UsersMapper {
         dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setEmailVerified(entity.isEmailVerified());
         dto.setMustChangePassword(entity.isMustChangePassword());
+
+        if (entity.getRoles() != null){
+            Set<Long> roleIds = entity.getRoles().stream()
+                    .map(Role::getId)
+                    .collect(Collectors.toSet());
+            dto.setRoleIds(roleIds);
+        }
 
         return dto;
     }
@@ -159,4 +205,20 @@ public class UsersMapper {
     public static RoleDTO toRoleDTO(Role r) { ... }
     public static List<RoleDTO> toRoleList(List<Role> roles) { ... }
     */
+
+    public static User toEntity(UsersCreateDTO dto, Set<Role> roles){
+        if (dto == null) return null;
+
+        User e = toEntity(dto);
+        e.setRoles(roles);
+        return e;
+    }
+
+
+    public static User toEntity(UsersUpdateDTO dto, Set<Role> roles){
+        if (dto == null)  return null;
+        User e = toEntity(dto);
+        e.setRoles(roles);
+        return e;
+    }
 }

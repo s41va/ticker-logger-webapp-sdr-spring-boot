@@ -1,15 +1,14 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -59,4 +58,7 @@ public class UsersCreateDTO {
     @NotNull(message = "{msg.user.failedLoginAttempts.notNull}")
     @Min(value = 0, message = "{msg.user.failedLoginAttempts.min}")
     private int failedLoginAttempts;
+
+    @NotEmpty(message = "{msg.user.roles.notEmpty}")
+    private Set<Long> roleIds = new HashSet<>();
 }

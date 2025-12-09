@@ -19,7 +19,7 @@
         </h1>
 
         <div class="mt-3">
-            <h2 class="h5" th:text="#{msg.user-detail.section.userData}">  </h2>
+            <h2 class="h5" th:text="#{msg.user-detail.section.userData}"></h2>
             <dl class="row">
                 <dt class="col-sm-3" th:text="#{msg.user-detail.field.id}"></dt>
                 <dd class="col-sm-9" th:text="${user.id}"></dd>
@@ -44,13 +44,13 @@
                 <dt class="col-sm-3" th:text="#{msg.user-detail.field.mustChangePassword}"></dt>
                 <dd class="col-sm-9" th:text="${user.mustChangePassword ? 'Sí' : 'No'}"></dd>
 
-                <dt class="col-sm-3" th:text="#{msg.user-detail.field.failedLoginAttempts}"> </dt>
+                <dt class="col-sm-3" th:text="#{msg.user-detail.field.failedLoginAttempts}"></dt>
                 <dd class="col-sm-9" th:text="${user.failedLoginAttempts}"></dd>
 
                 <dt class="col-sm-3" th:text="#{msg.user-detail.field.lastPasswordChange}"></dt>
                 <dd class="col-sm-9" th:text="${#temporals.format(user.lastPasswordChange, 'dd-MM-yyyy HH:mm')}"></dd>
 
-                <dt class="col-sm-3" th:text="#{msg.user-detail.field.passwordExpiresAt}"> </dt>
+                <dt class="col-sm-3" th:text="#{msg.user-detail.field.passwordExpiresAt}"></dt>
                 <dd class="col-sm-9" th:text="${#temporals.format(user.passwordExpiresAt, 'dd-MM-yyyy HH:mm')}"></dd>
             </dl>
         </div>
@@ -87,8 +87,24 @@
                             <span class="text-muted" th:text="#{msg.user-detail.profile.noImage}"></span>
                         </div>
                         <div th:if="${user.profileImage != null}">
-                            <img th:src="${user.profileImage}" alt="Foto perfil" class="img-thumbnail rounded" style="max-width: 150px;"/>
+                            <img th:src="${user.profileImage}" alt="Foto perfil" class="img-thumbnail rounded"
+                                 style="max-width: 150px;"/>
                         </div>
+                    </dd>
+                    <dt class="col-sm-3" th:text="#{msg.user.detail.field.roles}"></dt>
+                    <dd class="col-sm-9">
+                        <ul class="mb-0"
+                            th:if="${user.roles != null and !#lists.isEmpty(user.roles)}">
+                            <li th:each="roleName : ${user.roles}"
+                                th:text="${roleName}">
+                                ROLE_X
+                            </li>
+                        </ul>
+
+                        <span class="text-muted"
+                              th:if="${user.roles == null or #lists.isEmpty(user.roles)}"
+                              th:text="#{msg.user.detail.field.roles.empty}">This user has no roles assigned.
+                        </span>
                     </dd>
                 </div>
             </div>
