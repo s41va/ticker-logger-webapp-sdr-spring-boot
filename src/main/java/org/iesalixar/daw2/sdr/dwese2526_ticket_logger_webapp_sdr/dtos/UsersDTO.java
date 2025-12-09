@@ -18,9 +18,9 @@ public class UsersDTO {
 
     private Long id;
 
-    @NotEmpty(message = "{msg.user.username.notEmpty}")
-    @Size(max = 40, message = "{msg.user.username.size}")
-    private String username;
+    @NotEmpty(message = "{msg.user.email.notEmpty}")
+    @Size(max = 40, message = "{msg.user.email.size}")
+    private String email;
 
     @NotEmpty(message = "{msg.user.passwordHash.notEmpty}")
     @Size(max = 500, message = "{msg.user.passwordHash.size}")

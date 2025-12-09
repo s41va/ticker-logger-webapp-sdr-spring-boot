@@ -43,6 +43,16 @@ public class UsersDaoImple implements UsersDAO {
         return users;
     }
 
+    @Override
+    public List<User> listUserPage(int page, int size, String sortField, String sortDir) {
+        return List.of();
+    }
+
+    @Override
+    public long countUsers() {
+        return 0;
+    }
+
     /**
      * Inserta un nuevo usuario en la base de datos.
      *
@@ -50,7 +60,7 @@ public class UsersDaoImple implements UsersDAO {
      */
     @Override
     public void insertUser(User user) {
-        logger.info("Insertando usuario: {}", user.getUsername());
+        logger.info("Insertando usuario: {}", user.getEmail());
         entityManager.persist(user);
         logger.info("Inserted user successful");
     }
@@ -58,19 +68,19 @@ public class UsersDaoImple implements UsersDAO {
     /**
      * Verifica si existe un usuario con un nombre de usuario determinado.
      *
-     * @param username el nombre de usuario a buscar (no sensible a mayúsculas)
+     * @param email el nombre de usuario a buscar (no sensible a mayúsculas)
      * @return {@code true} si el usuario existe, {@code false} en caso contrario
      */
     @Override
-    public boolean existsUserByUsername(String username) {
-        logger.info("Entrando en el metodo existsUserByUsername para: {}", username);
+    public boolean existsUserByEmail(String email) {
+        logger.info("Entrando en el metodo existsUserByEmail para: {}", email);
         String hql = "SELECT COUNT(u) FROM User u WHERE u.username = :username";
         Long count = entityManager.createQuery(hql, Long.class)
-                .setParameter("username", username)
+                .setParameter("email", email)
                 .getSingleResult();
         boolean exists = count != null && count > 0;
 
-        logger.info("User con username: {} existe: {}", username, exists);
+        logger.info("User con email: {} existe: {}", email, exists);
         return exists;
     }
 
@@ -86,7 +96,7 @@ public class UsersDaoImple implements UsersDAO {
         User users = entityManager.find(User.class, id);
 
         if (users != null){
-            logger.info("Usuario encontrado: {} - {}", users.getId(), users.getUsername());
+            logger.info("Usuario encontrado: {} - {}", users.getId(), users.getEmail());
         }else {
             logger.warn("Ningun usuario encontrado con el id - {}", id);
         }
@@ -126,20 +136,31 @@ public class UsersDaoImple implements UsersDAO {
      * Comprueba si existe un usuario con un nombre de usuario dado, excluyendo un ID concreto.
      * <p>Ahora implementado con JdbcTemplate.</p>
      *
-     * @param username el nombre de usuario a buscar
+     * @param email el nombre de usuario a buscar
      * @param id el ID del usuario que se debe excluir de la búsqueda
      * @return {@code true} si existe otro usuario con ese nombre, {@code false} en caso contrario
      */
     @Override
-    public boolean existsUserByUsernameAndNotId(String username, long id) {
-        logger.info(" Entrando al metodo existsUserByUsernameAndNotId para username: {} excluyendo ID: {}", username, id);
-        String hql = "SELECT COUNT(u) FROM User u WHERE UPPER(u.username) = :username AND u.id != :id";
+    public boolean existsUserByEmailAndNotId(String email, long id) {
+        logger.info(" Entrando al metodo existsUserByEmailAndNotId para username: {} excluyendo ID: {}", email, id);
+        String hql = "SELECT COUNT(u) FROM User u WHERE UPPER(u.email) = :email AND u.id != :id";
         Long count = entityManager.createQuery(hql, Long.class)
-                .setParameter("username", username.toUpperCase())
+                .setParameter("email", email.toUpperCase())
                 .setParameter("id", id)
                 .getSingleResult();
         boolean exists = count != null && count > 0;
-        logger.info(" User with username: {} exists excluding id: {}: {}", username, id, exists);
+        logger.info(" User with username: {} exists excluding id: {}: {}", email, id, exists);
         return exists;
+    }
+
+    public User getUserByEmail(String email){
+        if (email == null ) return null;
+
+        String jpql = "SELECT u FROM User u WHERE u.email = :email";
+        return entityManager.createQuery(jpql, User.class)
+                .setParameter("email", email)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
     }
 }

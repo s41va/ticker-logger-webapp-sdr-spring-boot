@@ -21,9 +21,9 @@ public class UsersUpdateDTO {
     private Long id;
 
 
-    @NotBlank(message = "{msg.user.username.notEmpty}")
-    @Size(max = 40, message = "{msg.user.username.size}")
-    private String username;
+    @NotBlank(message = "{msg.user.email.notEmpty}")
+    @Size(max = 40, message = "{msg.user.email.size}")
+    private String email;
 
 
     @NotBlank(message = "{msg.user.passwordHash.notEmpty")

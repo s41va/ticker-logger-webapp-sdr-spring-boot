@@ -36,6 +36,10 @@ public interface UsersDAO {
      */
     List<User> listAllUsers() ;
 
+    List<User> listUserPage(int page, int size, String sortField, String sortDir);
+
+    long countUsers();
+
     /**
      * Inserta un nuevo usuario en la base de datos.
      *
@@ -47,11 +51,11 @@ public interface UsersDAO {
     /**
      * Verifica si existe un usuario con un nombre de usuario específico.
      *
-     * @param username el nombre de usuario que se desea comprobar.
+     * @param email  el nombre de usuario que se desea comprobar.
      * @return {@code true} si el usuario existe, {@code false} en caso contrario.
      * @throws SQLException si ocurre un error al ejecutar la consulta.
      */
-    boolean existsUserByUsername(String username) ;
+    boolean existsUserByEmail(String email) ;
 
     /**
      * Obtiene la información de un usuario a partir de su identificador único.
@@ -82,10 +86,12 @@ public interface UsersDAO {
      * Verifica si existe un usuario con un nombre de usuario específico,
      * excluyendo un identificador determinado (útil para validaciones durante una actualización).
      *
-     * @param username el nombre de usuario que se desea comprobar.
+     * @param email el nombre de usuario que se desea comprobar.
      * @param id el identificador del usuario que debe ser excluido de la comprobación.
      * @return {@code true} si existe otro usuario con el mismo nombre de usuario, {@code false} en caso contrario.
      * @throws SQLException si ocurre un error al ejecutar la consulta.
      */
-    boolean existsUserByUsernameAndNotId(String username, long id) ;
+    boolean existsUserByEmailAndNotId(String email, long id) ;
+
+    User getUserByEmail(String email);
 }

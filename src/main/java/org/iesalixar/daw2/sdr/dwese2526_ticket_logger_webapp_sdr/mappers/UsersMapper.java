@@ -5,20 +5,21 @@ import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDetailDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersUpdateDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.UserProfile;
 
 import java.util.List;
 
 public class UsersMapper {
 
     /**
-     * Convierte una entidad {@link User} a {@link UserDTO} (vista simple).
+     * Convierte una entidad {@link User} a {@link } (vista simple).
      * Incluye campos de estado de la cuenta relevantes para una vista de lista.
      */
     public static UsersDTO toDTO(User entity){
         if (entity == null) return null;
         UsersDTO dto = new UsersDTO();
         dto.setId(entity.getId());
-        dto.setUsername(entity.getUsername());
+        dto.setEmail(entity.getEmail());
         // Se omiten la contraseña (passwordHash) y campos de tiempo muy específicos para una vista simple.
         dto.setLastPasswordChange(entity.getLastPasswordChange());
         dto.setPasswordExpiresAt(entity.getPasswordExpiresAt());
@@ -49,7 +50,7 @@ public class UsersMapper {
 
         UsersDetailDTO dto = new UsersDetailDTO();
         dto.setId(entity.getId());
-        dto.setUsername(entity.getUsername());
+        dto.setEmail(entity.getEmail());
 
         // Mapeo de campos de seguridad y estado
         dto.setActive(entity.isActive());
@@ -59,6 +60,18 @@ public class UsersMapper {
         dto.setFailedLoginAttempts(entity.getFailedLoginAttempts());
         dto.setEmailVerified(entity.isEmailVerified());
         dto.setMustChangePassword(entity.isMustChangePassword());
+
+
+        UserProfile profile = entity.getProfile();
+
+        if (profile != null){
+            dto.setFirstName(profile.getFirstName());
+            dto.setLastName(profile.getLastName());
+            dto.setPhoneNumber(profile.getPhoneNumber());
+            dto.setProfileImage(profile.getProfileImage());
+            dto.setBio(profile.getBio());
+            dto.setLocale(profile.getLocale());
+        }
 
         // Asume que el campo 'roles' existe en la entidad User
         // dto.setRoles(toRoleList(entity.getRoles()));
@@ -75,7 +88,7 @@ public class UsersMapper {
     public static User toEntity(UsersCreateDTO dto){
         if (dto == null) return null;
         User e = new User();
-        e.setUsername(dto.getUsername());
+        e.setEmail(dto.getEmail());
 
         // Los campos de seguridad/estado se suelen inicializar en el servicio o constructor:
         e.setPasswordHash(dto.getPasswordHash()); // Se manejaría en el servicio
@@ -102,7 +115,7 @@ public class UsersMapper {
         if (entity == null) return null;
         UsersUpdateDTO dto = new UsersUpdateDTO();
         dto.setId(entity.getId());
-        dto.setUsername(entity.getUsername());
+        dto.setEmail(entity.getEmail());
 
         // Campos de estado que un administrador podría querer actualizar
         dto.setLastPasswordChange(entity.getLastPasswordChange());
@@ -125,7 +138,7 @@ public class UsersMapper {
         if (dto == null || entity == null) return;
 
         // El nombre de usuario puede ser editable o no, depende de la lógica de negocio
-        entity.setUsername(dto.getUsername());
+        entity.setEmail(dto.getEmail());
 
         // Campos de estado que se pueden actualizar desde el DTO
         entity.setActive(dto.getActive());
