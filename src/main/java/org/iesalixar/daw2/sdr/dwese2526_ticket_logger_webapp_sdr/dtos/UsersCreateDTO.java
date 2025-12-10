@@ -19,7 +19,6 @@ public class UsersCreateDTO {
     @NotNull(message = "{msg.user.id.notNull}")
     private Long id;
 
-    // 👤 Username
     @NotBlank(message = "{msg.user.email.notEmpty}")
     @Size(max = 40, message = "{msg.user.email.size}") // Usando el constraint (varchar 40)
     private String email;

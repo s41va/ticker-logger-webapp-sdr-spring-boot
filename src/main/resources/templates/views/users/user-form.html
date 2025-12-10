@@ -9,12 +9,12 @@
 <main class="form-page">
     <div class="form-card">
 
-        <h1 th:text="${user.id == null} ? @{users/insert} : @{users/edit} "></h1>
+        <h1 th:text="${user.id == null} ? #{msg.user-form.add} : #{msg.user-form.edit}">Nuevo Usuario</h1>
 
         <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
 
-        <form th:action="${user.id == null ? '/users/insert' : '/users/update' }"
+        <form th:action="${user.id} == null ? @{/users/insert} : @{/users/update}"
               th:object="${user}" enctype="multipart/form-data" method="post" class="mt-3">
 
             <input type="hidden" th:field="*{id}" />
@@ -77,14 +77,12 @@
                 <select id="roles"
                         class="form-select"
                         multiple
-                        th:field="*{rolesIds}">
+                        th:field="*{roleIds}">
 
                         <option th:each="role : ${allRoles}"
                                 th:value="${role.id}"
                                 th:text="${role.displayName} + ' (' + ${role.name} + ')' ">
-
                         </option>
-
                 </select>
             </div>
 

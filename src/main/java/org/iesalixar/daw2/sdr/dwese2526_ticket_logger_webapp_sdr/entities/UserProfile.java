@@ -1,12 +1,10 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -20,6 +18,8 @@ public class UserProfile {
     @Column
     private Long id;
 
+
+    @EqualsAndHashCode.Exclude
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "user_id")
@@ -48,6 +48,17 @@ public class UserProfile {
 
     @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime updateAt;
+
+//
+//    @Override
+//    public int hashCode() {
+//        // Replace: return user.hashCode();  <-- This causes the recursion
+//
+//        // With: return id != null ? id.hashCode() : 0;
+//
+//        // OR, if using Lombok/IDE generated methods, exclude the User field:
+//        return Objects.hash(firstName, lastName,  phoneNumber, profileImage, bio, locale, createdAt, updateAt); // Exclude the User object
+//    }
 
     public UserProfile(User user,
                        String firstName,

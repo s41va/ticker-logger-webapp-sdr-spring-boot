@@ -6,12 +6,14 @@ import lombok.*;
 import javax.swing.text.StyledEditorKit;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
 @Entity
+@ToString(onlyExplicitlyIncluded = true)
 @Table(name = "users")
 public class User {
 
@@ -49,9 +51,13 @@ public class User {
     @Column(name = "must_change_password", nullable = false)
     private boolean mustChangePassword = Boolean.FALSE;
 
+
+    @EqualsAndHashCode.Exclude
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private UserProfile profile;
 
+
+    @EqualsAndHashCode.Exclude
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
@@ -61,7 +67,15 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
 
-
+//    @Override
+//    public int hashCode() {
+//        // Replace: return userProfile.hashCode();  <-- This causes the recursion
+//
+//        // With: return id != null ? id.hashCode() : 0;
+//
+//        // OR, if using Lombok/IDE generated methods, exclude the UserProfile field:
+//        return Objects.hash(email, passwordHash, active, accountNonLocked, lastPasswordChange, failedLoginAttempts, emailVerified, mustChangePassword, roles); // Exclude the UserProfile object
+//    }
 
     /**
      *

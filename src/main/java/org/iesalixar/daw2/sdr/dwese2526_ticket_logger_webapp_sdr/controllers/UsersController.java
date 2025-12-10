@@ -127,22 +127,25 @@ public class UsersController {
      * @return La ruta a la vista JSP del formulario de usuario.
      */
     @GetMapping("/edit")
-    public String showEditForm(@RequestParam("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String showEditForm(@RequestParam("id") Long id, Model model, Locale locale) {
         logger.info(" Entrando al método showEditForm para ID: {}", id);
-        User user = null;
-        UsersUpdateDTO usersDTO = null;
         try {
-            user = usersDAO.getUsersById(id);
+            User user = usersDAO.getUsersById(id);
+            UsersUpdateDTO usersDTO = UsersMapper.toUpdateDTO(user);
             if (user == null) {
                 logger.warn(" No se ha encontrado el usuario con Id {}", id);
-                redirectAttributes.addFlashAttribute("errorMessage", "Usuario no encontrado.");
-                return "redirect:/users";
+                String errorMessage = messageSource.getMessage("msg.user-controller.edit.notFound", null, locale);
+                model.addAttribute("errorMessage", errorMessage);
+                model.addAttribute("user", new UsersUpdateDTO());
+
+            }else{
+                model.addAttribute("user", usersDTO);
             }
-            usersDTO = UsersMapper.toUpdateDTO(user);
         } catch (Exception e) {
             logger.error(" Error al obtener el usuario con Id {} :{}", id, e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Error al cargar el usuario.");
-            return "redirect:/users";
+            String errorMessage = messageSource.getMessage("msg.user-controller.edit.error", null, locale);
+            model.addAttribute("errorMessage", errorMessage);
+            model.addAttribute("user", new UsersUpdateDTO());
         }
         model.addAttribute("allRoles", roleDAO.listAllRoles());
         return "views/users/user-form";
