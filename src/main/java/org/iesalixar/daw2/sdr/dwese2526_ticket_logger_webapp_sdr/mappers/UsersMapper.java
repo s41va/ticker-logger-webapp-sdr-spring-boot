@@ -24,7 +24,7 @@ public class UsersMapper {
         UsersDTO dto = new UsersDTO();
         dto.setId(entity.getId());
         dto.setEmail(entity.getEmail());
-        // Se omiten la contraseña (passwordHash) y campos de tiempo muy específicos para una vista simple.
+
         dto.setLastPasswordChange(entity.getLastPasswordChange());
         dto.setPasswordExpiresAt(entity.getPasswordExpiresAt());
         dto.setFailedLoginAttempts(entity.getFailedLoginAttempts());
@@ -50,7 +50,7 @@ public class UsersMapper {
      */
     public static List<UsersDTO> toDTOList(List<User> entities){
         if (entities == null) return List.of();
-        return entities.stream().map(UsersMapper::toDTO).toList();
+        return entities.stream().map(UsersMapper::toDTO).collect(Collectors.toList());
     }
 
     //
@@ -136,6 +136,7 @@ public class UsersMapper {
         User e = new User();
         e.setId(dto.getId());
         e.setEmail(dto.getEmail());
+        e.setPasswordHash(dto.getPasswordHash());
         e.setActive(dto.getActive()); // El usuario está activo por defecto
         e.setAccountNonLocked(dto.getAccountNonLocked()); // No bloqueado por defecto
         e.setEmailVerified(dto.getEmailVerified()); // Pendiente de verificación

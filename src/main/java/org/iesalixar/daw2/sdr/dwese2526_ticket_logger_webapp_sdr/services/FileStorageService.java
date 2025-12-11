@@ -38,7 +38,7 @@ public class FileStorageService {
             }
 
             Path uploadsDir = Paths.get(uploadRootPath).resolve(UPLOADS_SUBDIR);
-            Files.createDirectory(uploadsDir);
+            Files.createDirectories(uploadsDir);
             Path filePath = uploadsDir.resolve(uniqueFileName);
             Files.write(filePath, file.getBytes());
 

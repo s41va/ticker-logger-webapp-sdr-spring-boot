@@ -7,6 +7,7 @@ import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersCreat
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDetailDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersUpdateDTO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.Role;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.mappers.UsersMapper;
 import org.slf4j.Logger;
@@ -50,6 +51,8 @@ public class UsersController {
 
     @Autowired
     private MessageSource messageSource; // Para mensajes de internacionalización/error
+
+    private static final int PASSWORD_EXPIRY_DAYS = 90;
 
     // --- MÉTODOS GET: LISTAR, NUEVO, EDITAR ---
 
@@ -226,7 +229,8 @@ public class UsersController {
      * @return Redirección a la lista de usuarios.
      */
     @PostMapping("/update")
-    public String updateUsers(@Valid @ModelAttribute("user") UsersUpdateDTO userDTO, BindingResult result, RedirectAttributes redirectAttributes, Locale locale) {
+    public String updateUsers(@Valid @ModelAttribute("user") UsersUpdateDTO userDTO,
+                              BindingResult result, RedirectAttributes redirectAttributes, Locale locale) {
         logger.info(" Actualizando usuario con ID {}", userDTO.getId());
 
         try {
@@ -241,16 +245,16 @@ public class UsersController {
                 redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
                 return "redirect:/users/edit?id=" + userDTO.getId();
             }
-//
-//            LocalDateTime lastPasswordChange = userDTO.getLastPasswordChange();
-//            if (lastPasswordChange == null){
-//                lastPasswordChange = LocalDateTime.now();
-//                userDTO.setLastPasswordChange(lastPasswordChange);
-//            }
-//            LocalDateTime passwordExpiresAt = lastPasswordChange.plusDays(PASSWORD_EXPIRY_DAYS);
-//            userDTO.setPasswordExpiresAt(passwordExpiresAt);
 
-            var roles = new HashSet<>(roleDAO.findAllByIds(userDTO.getRoleIds()));
+            LocalDateTime lastPasswordChange = userDTO.getLastPasswordChange();
+            if (lastPasswordChange == null){
+                lastPasswordChange = LocalDateTime.now();
+                userDTO.setLastPasswordChange(lastPasswordChange);
+            }
+            LocalDateTime passwordExpiresAt = lastPasswordChange.plusDays(PASSWORD_EXPIRY_DAYS);
+            userDTO.setPasswordExpiresAt(passwordExpiresAt);
+
+            HashSet<Role> roles = new HashSet<>(roleDAO.findAllByIds(userDTO.getRoleIds()));
             User user = UsersMapper.toEntity(userDTO, roles);
             usersDAO.updateUsers(user);
             logger.info(" Usuario con ID {} actualizado con éxito.", user.getId());

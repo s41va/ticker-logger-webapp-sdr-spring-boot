@@ -29,7 +29,7 @@ public class UsersUpdateDTO {
     private String email;
 
 
-    @NotBlank(message = "{msg.user.passwordHash.notEmpty")
+    @NotBlank(message = "{msg.user.passwordHash.notEmpty}")
     @Size(max = 40, message = "{msg.user.passwordHash.size}")
     private String passwordHash;
 
