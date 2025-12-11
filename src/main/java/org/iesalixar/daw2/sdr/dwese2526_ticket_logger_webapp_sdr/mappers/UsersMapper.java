@@ -141,7 +141,9 @@ public class UsersMapper {
         e.setAccountNonLocked(dto.getAccountNonLocked()); // No bloqueado por defecto
         e.setEmailVerified(dto.getEmailVerified()); // Pendiente de verificación
         e.setMustChangePassword(dto.getMustChangePassword()); // Se fuerza el cambio si se genera una contraseña temporal
-        // Las fechas de cambio/expiración se establecen en el servicio
+        e.setLastPasswordChange(dto.getLastPasswordChange());
+        e.setPasswordExpiresAt(dto.getPasswordExpiresAt());
+        e.setFailedLoginAttempts(dto.getFailedLoginAttempts());
 
         return e;
     }
@@ -161,6 +163,7 @@ public class UsersMapper {
         dto.setLastPasswordChange(entity.getLastPasswordChange());
         dto.setPasswordExpiresAt(entity.getPasswordExpiresAt());
         dto.setActive(entity.isActive());
+        dto.setFailedLoginAttempts(entity.getFailedLoginAttempts());
         dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setEmailVerified(entity.isEmailVerified());
         dto.setMustChangePassword(entity.isMustChangePassword());
