@@ -56,7 +56,7 @@ public class UsersCreateDTO {
     // 🔢 Intentos de login fallidos (se validan con @NotNull y quizás un rango)
     @NotNull(message = "{msg.user.failedLoginAttempts.notNull}")
     @Min(value = 0, message = "{msg.user.failedLoginAttempts.min}")
-    private int failedLoginAttempts;
+    private Integer failedLoginAttempts;
 
     @NotEmpty(message = "{msg.user.roles.notEmpty}")
     private Set<Long> roleIds = new HashSet<>();

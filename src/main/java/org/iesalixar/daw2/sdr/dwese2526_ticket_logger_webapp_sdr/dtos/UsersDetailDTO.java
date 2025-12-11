@@ -21,7 +21,7 @@ public class UsersDetailDTO {
     private boolean accountNonLocked;
     private LocalDateTime lastPasswordChange;
     private LocalDateTime passwordExpiresAt;
-    private int failedLoginAttempts;
+    private Integer failedLoginAttempts;
     private boolean emailVerified;
     private boolean mustChangePassword;
 
