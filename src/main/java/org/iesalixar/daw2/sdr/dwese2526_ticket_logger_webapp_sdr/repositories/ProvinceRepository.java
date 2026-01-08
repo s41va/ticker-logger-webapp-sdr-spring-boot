@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface ProvinceRepository extends JpaRepository<Province, Long> {
 
-    boolean existsByCode(Long id);
+    boolean existsByCode(String code);
     boolean existsByCodeAndIdNot(String code, Long id);
     @Override
     Optional<Province> findById(Long id);

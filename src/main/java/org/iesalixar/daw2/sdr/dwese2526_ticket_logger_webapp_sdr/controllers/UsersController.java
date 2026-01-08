@@ -14,6 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -24,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * 💻 Controlador Spring MVC para la gestión de usuarios (CRUD).
@@ -63,14 +68,23 @@ public class UsersController {
      * @return La ruta a la vista JSP de lista de usuarios.
      */
     @GetMapping
-    public String listUsers(Model model) {
-        logger.info(" Solicitando la lista de todos los usuarios...");
+    public String listUsers(@PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
+                            Model model, Locale locale) {
+        logger.info("Solicitando la lista de todos los usuarios... page={}, size={}, sort={}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort() );
         List<User> listUsers = null;
         List<UsersDTO> listUsersDTOs = null;
         try {
-            listUsers = usersRepository.listAllUsers();
-            listUsersDTOs = UsersMapper.toDTOList(listUsers);
-            logger.info("Se han devuelto {} usuarios.", listUsersDTOs.size());
+            Page<UsersDTO> listUserDTO = usersRepository.findAll(pageable).map(UsersMapper::toDTO);
+            logger.info("Se han cargado {} regiones en la pagina {}",
+                    listUserDTO.getNumberOfElements(), listUserDTO.getNumber());
+            model.addAttribute("page", listUserDTO);
+            String sortParam = "name,asc";
+            if (listUserDTO.getSort().isSorted()){
+                Sort.Order order = listUserDTO.getSort().iterator().next();
+                sortParam= order.getProperty() + " " + order.getDirection().name().toLowerCase();
+            }
+            model.addAttribute("sortParam", sortParam);
         } catch (Exception e) {
             logger.error(" Error al listar los usuarios: {}", e.getMessage());
             model.addAttribute("errorMessage", "Error al listar los usuarios.");
@@ -86,13 +100,15 @@ public class UsersController {
                              Locale locale){
         logger.info("Mostrando detalle de la region con ID: {}", id);
         try{
-            User users = usersRepository.getUsersById(id);
-            if (users == null){
+            Optional<User> userOpt = usersRepository.findById(id);
+            if (userOpt.isEmpty()){
                 String msg = messageSource.getMessage("msg.user-controller.detail.notFound", null, locale);
                 redirectAttributes.addFlashAttribute("errorMessage", msg);
                 return "redirect:/users";
             }
-            UsersDetailDTO userDTO = UsersMapper.toDetailDTO(users);
+            User user = userOpt.get();
+
+            UsersDetailDTO userDTO = UsersMapper.toDetailDTO(user);
             model.addAttribute("user", userDTO);
             return "views/users/user-detail";
         }catch (Exception e){
@@ -131,17 +147,19 @@ public class UsersController {
     @GetMapping("/edit")
     public String showEditForm(@RequestParam("id") Long id, Model model, Locale locale) {
         logger.info(" Entrando al método showEditForm para ID: {}", id);
+        Optional<User> userOpt;
+        UsersUpdateDTO usersDTO = null;
         try {
-            User user = usersRepository.getUsersById(id);
-            UsersUpdateDTO usersDTO = UsersMapper.toUpdateDTO(user);
-            if (user == null) {
+            userOpt = usersRepository.findById(id);
+            if (userOpt.isEmpty()) {
                 logger.warn(" No se ha encontrado el usuario con Id {}", id);
-                String errorMessage = messageSource.getMessage("msg.user-controller.edit.notFound", null, locale);
+                String errorMessage = messageSource.getMessage("msg.user-controller.edit.notFound", new Object[]{id}, locale);
                 model.addAttribute("errorMessage", errorMessage);
                 model.addAttribute("user", new UsersUpdateDTO());
 
             }else{
-                model.addAttribute("user", usersDTO);
+                User user = userOpt.get();
+                usersDTO = UsersMapper.toUpdateDTO(user);
             }
         } catch (Exception e) {
             logger.error(" Error al obtener el usuario con Id {} :{}", id, e.getMessage());
@@ -149,6 +167,7 @@ public class UsersController {
             model.addAttribute("errorMessage", errorMessage);
             model.addAttribute("user", new UsersUpdateDTO());
         }
+        model.addAttribute("user", usersDTO);
         model.addAttribute("allRoles", roleRepository.listAllRoles());
         return "views/users/user-form";
     }
