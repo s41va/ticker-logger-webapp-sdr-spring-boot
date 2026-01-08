@@ -1,8 +1,8 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.controllers;
 
 import jakarta.validation.Valid;
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.RoleDAO;
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.UsersDAO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.repositories.RoleRepository;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.repositories.UsersRepository;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersCreateDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UsersDetailDTO;
@@ -13,7 +13,6 @@ import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.mappers.UsersMa
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,10 +43,10 @@ public class UsersController {
     private static final Logger logger = LoggerFactory.getLogger(UsersController.class);
 
     @Autowired
-    private UsersDAO usersDAO;
+    private UsersRepository usersRepository;
 
     @Autowired
-    private RoleDAO roleDAO;
+    private RoleRepository roleRepository;
 
     @Autowired
     private MessageSource messageSource; // Para mensajes de internacionalización/error
@@ -69,7 +68,7 @@ public class UsersController {
         List<User> listUsers = null;
         List<UsersDTO> listUsersDTOs = null;
         try {
-            listUsers = usersDAO.listAllUsers();
+            listUsers = usersRepository.listAllUsers();
             listUsersDTOs = UsersMapper.toDTOList(listUsers);
             logger.info("Se han devuelto {} usuarios.", listUsersDTOs.size());
         } catch (Exception e) {
@@ -87,7 +86,7 @@ public class UsersController {
                              Locale locale){
         logger.info("Mostrando detalle de la region con ID: {}", id);
         try{
-            User users = usersDAO.getUsersById(id);
+            User users = usersRepository.getUsersById(id);
             if (users == null){
                 String msg = messageSource.getMessage("msg.user-controller.detail.notFound", null, locale);
                 redirectAttributes.addFlashAttribute("errorMessage", msg);
@@ -117,7 +116,7 @@ public class UsersController {
         logger.info(" Mostrando el formulario para nuevo usuario.");
         // Se crea un objeto Users vacío para enlazar los datos del formulario
         model.addAttribute("user", new UsersCreateDTO());
-        model.addAttribute("allRoles", roleDAO.listAllRoles());
+        model.addAttribute("allRoles", roleRepository.listAllRoles());
         return "views/users/user-form";
     }
 
@@ -133,7 +132,7 @@ public class UsersController {
     public String showEditForm(@RequestParam("id") Long id, Model model, Locale locale) {
         logger.info(" Entrando al método showEditForm para ID: {}", id);
         try {
-            User user = usersDAO.getUsersById(id);
+            User user = usersRepository.getUsersById(id);
             UsersUpdateDTO usersDTO = UsersMapper.toUpdateDTO(user);
             if (user == null) {
                 logger.warn(" No se ha encontrado el usuario con Id {}", id);
@@ -150,7 +149,7 @@ public class UsersController {
             model.addAttribute("errorMessage", errorMessage);
             model.addAttribute("user", new UsersUpdateDTO());
         }
-        model.addAttribute("allRoles", roleDAO.listAllRoles());
+        model.addAttribute("allRoles", roleRepository.listAllRoles());
         return "views/users/user-form";
     }
 
@@ -178,12 +177,12 @@ public class UsersController {
         try {
 
             if (result.hasErrors()) {
-                model.addAttribute("allRoles", roleDAO.listAllRoles());
+                model.addAttribute("allRoles", roleRepository.listAllRoles());
                 return "user-form"; // Vuelve al formulario con errores de campo
             }
 
             // **Validación de unicidad de username**
-            if (usersDAO.existsUserByEmail(userDTO.getEmail())) {
+            if (usersRepository.existsUserByEmail(userDTO.getEmail())) {
                 logger.warn("El email {} ya existe.", userDTO.getEmail());
                 // Usar messageSource para el mensaje de error si está configurado
                 String errorMessage = messageSource.getMessage("msg.user-controller.insert.usernameExist", null, locale);
@@ -200,9 +199,9 @@ public class UsersController {
                 userDTO.setLastPasswordChange(now);
                 userDTO.setPasswordExpiresAt(now.plusMonths(3));
             }
-            var roles = new HashSet<>(roleDAO.findAllByIds(userDTO.getRoleIds()));
+            var roles = new HashSet<>(roleRepository.findAllByIds(userDTO.getRoleIds()));
             User user = UsersMapper.toEntity(userDTO, roles);
-            usersDAO.insertUser(user);
+            usersRepository.insertUser(user);
             logger.info(" Usuario '{}' insertado con éxito.", user.getEmail());
             String successMessage = messageSource.getMessage("msg.user-controller.insert.success", null, locale);
             redirectAttributes.addFlashAttribute("successMessage", successMessage);
@@ -239,7 +238,7 @@ public class UsersController {
                 return "views/users/user-form"; // Vuelve al formulario con errores de campo
             }
             // **Validación de unicidad de username (excluyendo el ID actual)**
-            if (usersDAO.existsUserByEmailAndNotId(userDTO.getEmail(), userDTO.getId())) {
+            if (usersRepository.existsUserByEmailAndNotId(userDTO.getEmail(), userDTO.getId())) {
                 logger.warn("El email {} ya existe para otro usuario.", userDTO.getEmail());
                 String errorMessage = messageSource.getMessage("msg.user-controller.update.userExists", null, locale);
                 redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
@@ -254,9 +253,9 @@ public class UsersController {
             LocalDateTime passwordExpiresAt = lastPasswordChange.plusDays(PASSWORD_EXPIRY_DAYS);
             userDTO.setPasswordExpiresAt(passwordExpiresAt);
 
-            HashSet<Role> roles = new HashSet<>(roleDAO.findAllByIds(userDTO.getRoleIds()));
+            HashSet<Role> roles = new HashSet<>(roleRepository.findAllByIds(userDTO.getRoleIds()));
             User user = UsersMapper.toEntity(userDTO, roles);
-            usersDAO.updateUsers(user);
+            usersRepository.updateUsers(user);
             logger.info(" Usuario con ID {} actualizado con éxito.", user.getId());
 
 
@@ -282,7 +281,7 @@ public class UsersController {
         logger.warn(" Entrando al método deleteUsers para ID: {}", id);
 
         try {
-            usersDAO.deleteUsers(id);
+            usersRepository.deleteUsers(id);
             logger.info(" Usuario con ID {} eliminado con éxito", id);
             redirectAttributes.addFlashAttribute("successMessage", "Usuario eliminado con éxito.");
         } catch (Exception e) {

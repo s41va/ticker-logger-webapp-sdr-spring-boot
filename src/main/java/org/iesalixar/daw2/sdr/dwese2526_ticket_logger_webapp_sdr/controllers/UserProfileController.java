@@ -1,8 +1,8 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.controllers;
 
 import jakarta.validation.Valid;
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.UserProfileDAO;
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.UsersDAO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.repositories.UserProfileRepository;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.repositories.UsersRepository;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UserProfileFormDTO;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.UserProfile;
@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.swing.*;
 import java.util.Locale;
 
 @Controller
@@ -33,10 +31,10 @@ public class UserProfileController {
     private MessageSource messageSource;
 
     @Autowired
-    private UsersDAO userDao;
+    private UsersRepository userDao;
 
     @Autowired
-    private UserProfileDAO userProfileDAO;
+    private UserProfileRepository userProfileRepository;
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -57,7 +55,7 @@ public class UserProfileController {
 
         }
 
-        UserProfile userProfile = userProfileDAO.getUserProfileByUserId(user.getId());
+        UserProfile userProfile = userProfileRepository.getUserProfileByUserId(user.getId());
         UserProfileFormDTO userProfileFormDTO = UserProfileMapper.toFormDto(user, userProfile);
         model.addAttribute("userProfileForm", userProfileFormDTO);
 
@@ -92,7 +90,7 @@ public class UserProfileController {
                 return "redirect:/profile/edit";
             }
 
-            UserProfile userProfile = userProfileDAO.getUserProfileByUserId(userId);
+            UserProfile userProfile = userProfileRepository.getUserProfileByUserId(userId);
             boolean isNew = (userProfile == null);
             if (isNew){
                 userProfile = UserProfileMapper.toNewEntity(profileDto, user);
@@ -150,7 +148,7 @@ public class UserProfileController {
             }else {
                 UserProfileMapper.copyToExistingEntity(profileDto, userProfile);
             }
-            userProfileDAO.saveOrUpdateUserProfile(userProfile);
+            userProfileRepository.saveOrUpdateUserProfile(userProfile);
             String successMessage = messageSource.getMessage("msg.userProfile.success", null, locale);
             redirectAttributes.addFlashAttribute("successMessage", successMessage);
 

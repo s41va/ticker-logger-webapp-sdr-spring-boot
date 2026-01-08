@@ -8,9 +8,8 @@ import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.Region
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.mappers.ProvinceMapper;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.mappers.RegionMapper;
 import org.springframework.ui.Model;
-import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.ProvinceDAO;
-import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.daos.RegionDAO;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.repositories.ProvinceRepository;
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.repositories.RegionRepository;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.Province;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +32,10 @@ public class ProvinceController {
     private MessageSource messageSource;
 
     @Autowired
-    private ProvinceDAO provinceDAO;
+    private ProvinceRepository provinceDAO;
 
     @Autowired
-    private RegionDAO regionDAO;
+    private RegionRepository regionRepository;
 
     @GetMapping
     public String listProvinces(@RequestParam(name = "page", defaultValue = "0")int page,
@@ -105,7 +104,7 @@ public class ProvinceController {
     public String showNewForm( Model model, Locale locale){
         logger.info("Entrando al metodo showNewForm");
         try{
-            List<Region> listRegions =regionDAO.listAllRegions();
+            List<Region> listRegions = regionRepository.listAllRegions();
             List<RegionDTO> listRegionDTOs = RegionMapper.toDTOList(listRegions);
             model.addAttribute("province" , new ProvinceCreateDTO());
             model.addAttribute("listRegions", listRegionDTOs);
@@ -139,7 +138,7 @@ public class ProvinceController {
         try {
             if (result.hasErrors()) {
                 // Volvemos a cargar las regiones para el select cuando hay errores
-                List<Region> listRegions = regionDAO.listAllRegions();
+                List<Region> listRegions = regionRepository.listAllRegions();
                 List<RegionDTO> listRegionsDTO = RegionMapper.toDTOList(listRegions);
                 model.addAttribute("listRegions", listRegions);
                 return "views/province/province-form";
@@ -183,7 +182,7 @@ public class ProvinceController {
                 model.addAttribute("errorMessage", errorMessage);
 
             }else {
-                List<Region> listRegions = regionDAO.listAllRegions();
+                List<Region> listRegions = regionRepository.listAllRegions();
                 List<RegionDTO> listRegionsDTO = RegionMapper.toDTOList(listRegions);
                 model.addAttribute("province", provinceDTO);
                 model.addAttribute("listRegions", listRegionsDTO);
@@ -218,7 +217,7 @@ public class ProvinceController {
         try {
             if (result.hasErrors()) {
                 // Volvemos a cargar las regiones para el select cuando hay errores
-                List<Region> listRegions = regionDAO.listAllRegions();
+                List<Region> listRegions = regionRepository.listAllRegions();
                 List<RegionDTO> listRegionsDTO = RegionMapper.toDTOList(listRegions);
                 model.addAttribute("listRegions", listRegionsDTO);
                 return "views/provinces/province-form";
