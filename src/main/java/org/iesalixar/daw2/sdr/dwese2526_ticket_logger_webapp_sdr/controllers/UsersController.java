@@ -201,7 +201,7 @@ public class UsersController {
             }
 
             // **Validación de unicidad de username**
-            if (usersRepository.existsUserByEmail(userDTO.getEmail())) {
+            if (usersRepository.existsByEmail(userDTO.getEmail())) {
                 logger.warn("El email {} ya existe.", userDTO.getEmail());
                 // Usar messageSource para el mensaje de error si está configurado
                 String errorMessage = messageSource.getMessage("msg.user-controller.insert.usernameExist", null, locale);
@@ -220,7 +220,7 @@ public class UsersController {
             }
             var roles = new HashSet<>(roleRepository.findAllByIds(userDTO.getRoleIds()));
             User user = UsersMapper.toEntity(userDTO, roles);
-            usersRepository.insertUser(user);
+            usersRepository.save(user);
             logger.info(" Usuario '{}' insertado con éxito.", user.getEmail());
             String successMessage = messageSource.getMessage("msg.user-controller.insert.success", null, locale);
             redirectAttributes.addFlashAttribute("successMessage", successMessage);
@@ -257,7 +257,7 @@ public class UsersController {
                 return "views/users/user-form"; // Vuelve al formulario con errores de campo
             }
             // **Validación de unicidad de username (excluyendo el ID actual)**
-            if (usersRepository.existsUserByEmailAndNotId(userDTO.getEmail(), userDTO.getId())) {
+            if (usersRepository.existsByEmailAndIdNot(userDTO.getEmail(), userDTO.getId())) {
                 logger.warn("El email {} ya existe para otro usuario.", userDTO.getEmail());
                 String errorMessage = messageSource.getMessage("msg.user-controller.update.userExists", null, locale);
                 redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
@@ -274,7 +274,7 @@ public class UsersController {
 
             HashSet<Role> roles = new HashSet<>(roleRepository.findAllByIds(userDTO.getRoleIds()));
             User user = UsersMapper.toEntity(userDTO, roles);
-            usersRepository.updateUsers(user);
+            usersRepository.save(user);
             logger.info(" Usuario con ID {} actualizado con éxito.", user.getId());
 
 
@@ -300,7 +300,7 @@ public class UsersController {
         logger.warn(" Entrando al método deleteUsers para ID: {}", id);
 
         try {
-            usersRepository.deleteUsers(id);
+            usersRepository.deleteById(id);
             logger.info(" Usuario con ID {} eliminado con éxito", id);
             redirectAttributes.addFlashAttribute("successMessage", "Usuario eliminado con éxito.");
         } catch (Exception e) {
