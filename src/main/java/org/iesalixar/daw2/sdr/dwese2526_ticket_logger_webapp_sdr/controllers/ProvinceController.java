@@ -45,28 +45,31 @@ public class ProvinceController {
 
     @GetMapping
     public String listProvinces(@PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-                                Model model, Locale locale){
-        logger.info("Solicitando la lista de todas las provincias page={}, size={}, sort={}",
+                                Model model) {
+        logger.info("Solicitando la lista de provincias... page={}, size={}, sort={}",
                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-        try{
-            Page<ProvinceDTO> listProvinceDTOs = provinceRepository.findAll(pageable).map(ProvinceMapper::toDTO);
-            logger.info("Se han cargado {} regiones en la pagina {}",
-                    listProvinceDTOs.getNumberOfElements(), listProvinceDTOs.getNumber());
-            model.addAttribute("page", listProvinceDTOs);
+
+        try {
+            Page<ProvinceDTO> provincesPage = provinceRepository.findAll(pageable).map(ProvinceMapper::toDTO);
+            logger.info("Se han cargado {} provincias en la página {}",
+                    provincesPage.getNumberOfElements(), provincesPage.getNumber());
+
+            model.addAttribute("page", provincesPage);
+
             String sortParam = "name,asc";
-            if (listProvinceDTOs.getSort().isSorted()){
-                Sort.Order order = listProvinceDTOs.getSort().iterator().next();
-                sortParam= order.getProperty() + " " + order.getDirection().name().toLowerCase();
+            if (provincesPage.getSort().isSorted()) {
+                Sort.Order order = provincesPage.getSort().iterator().next();
+                sortParam = order.getProperty() + "," + order.getDirection().name().toLowerCase();
             }
             model.addAttribute("sortParam", sortParam);
-
         } catch (Exception e) {
-            logger.error("Error al insertar las provincias: {}", e.getMessage());
-            String errorMessage = messageSource.getMessage("msg.province-controller.list.error" ,null, locale);
-            model.addAttribute("errorMessage", errorMessage);
+            logger.error("Error al listar las provincias: {}", e.getMessage(), e);
+            model.addAttribute("errorMessage", "Error al listar las provincias.");
         }
+
         return "views/province/province-list";
     }
+
 
 
     @GetMapping("/detail")

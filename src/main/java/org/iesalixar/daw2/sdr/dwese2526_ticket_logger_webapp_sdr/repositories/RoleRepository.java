@@ -7,6 +7,5 @@ import java.util.List;
 import java.util.Set;
 
 public interface RoleRepository extends JpaRepository<Role, Long> {
-    List<Role> listAllRoles();
-    List<Role> findAllByIds(Set<Long> ids);
+
 }

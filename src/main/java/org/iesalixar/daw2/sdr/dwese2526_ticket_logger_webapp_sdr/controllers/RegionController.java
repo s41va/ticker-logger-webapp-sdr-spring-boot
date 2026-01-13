@@ -42,28 +42,29 @@ public class RegionController {
     private MessageSource messageSource;
 
     @GetMapping
-    public String listRegions(@PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-                              Model model) {
+    public String listRegions(@PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC)Pageable pageable,
+                              Model model){
         logger.info("Solicitando la lista de todas las regiones... page={}, size={}, sort={}",
-               pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort() );
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+
         try {
-          Page<RegionDTO> listRegionsDTOs = regionRepository.findAll(pageable).map(RegionMapper::toDTO);
-          logger.info("Se han cargado {} regiones en la pagina {}",
-                  listRegionsDTOs.getNumberOfElements(), listRegionsDTOs.getNumber());
-          model.addAttribute("page", listRegionsDTOs);
-          String sortParam = "name,asc";
-          if (listRegionsDTOs.getSort().isSorted()){
-              Sort.Order order = listRegionsDTOs.getSort().iterator().next();
-              sortParam= order.getProperty() + " " + order.getDirection().name().toLowerCase();
-          }
-          model.addAttribute("sortParam", sortParam);
-        } catch (Exception e) {
+            Page<RegionDTO> listRegionsDTOs = regionRepository.findAll(pageable).map(RegionMapper::toDTO);
+            logger.info("Se han cargado {} regiones en la pagina {}",
+                    listRegionsDTOs.getNumberOfElements(), listRegionsDTOs.getNumber());
+            model.addAttribute("page", listRegionsDTOs);
+
+            String sortParam = "name,asc";
+            if (listRegionsDTOs.getSort().isSorted()) {
+                Sort.Order order = listRegionsDTOs.getSort().iterator().next();
+                sortParam = order.getProperty() + "," + order.getDirection().name().toLowerCase();
+            }
+            model.addAttribute("sortParam", sortParam);
+        }
+        catch (Exception e) {
             logger.error("Error al listar las regiones: {}", e.getMessage());
-            model.addAttribute("errorMessage", "Error al listar las regiones");
+            model.addAttribute("errorMessage", "Error al listar las regiones.");
         }
         return "views/region/region-list";
-
-
     }
 
     @GetMapping("/detail")

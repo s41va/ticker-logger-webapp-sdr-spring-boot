@@ -68,28 +68,27 @@ public class UsersController {
      * @return La ruta a la vista JSP de lista de usuarios.
      */
     @GetMapping
-    public String listUsers(@PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-                            Model model, Locale locale) {
-        logger.info("Solicitando la lista de todos los usuarios... page={}, size={}, sort={}",
-                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort() );
-        List<User> listUsers = null;
-        List<UsersDTO> listUsersDTOs = null;
+    public String listUsers(@PageableDefault(size = 10, sort = "id") Pageable pageable,
+                            Model model,
+                            Locale locale) {
+        logger.info("Solicitando la lista de usuarios... page={}, size={}, sort={}", pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         try {
-            Page<UsersDTO> listUserDTO = usersRepository.findAll(pageable).map(UsersMapper::toDTO);
-            logger.info("Se han cargado {} regiones en la pagina {}",
-                    listUserDTO.getNumberOfElements(), listUserDTO.getNumber());
-            model.addAttribute("page", listUserDTO);
-            String sortParam = "name,asc";
-            if (listUserDTO.getSort().isSorted()){
-                Sort.Order order = listUserDTO.getSort().iterator().next();
-                sortParam= order.getProperty() + " " + order.getDirection().name().toLowerCase();
+            Page<UsersDTO> pageUsers = usersRepository.findAll(pageable).map(UsersMapper::toDTO);
+            logger.info("Se han cargado {} usuarios en la página {}", pageUsers.getNumberOfElements(), pageUsers.getNumber());
+            model.addAttribute("page", pageUsers);
+
+            String sortParam = "id,asc";
+            if (pageUsers.getSort().isSorted()) {
+                var order = pageUsers.getSort().iterator().next();
+                sortParam = order.getProperty() + "," + order.getDirection().name().toLowerCase();
             }
             model.addAttribute("sortParam", sortParam);
+
         } catch (Exception e) {
-            logger.error(" Error al listar los usuarios: {}", e.getMessage());
-            model.addAttribute("errorMessage", "Error al listar los usuarios.");
+            logger.error("Error al listar los usuarios: {}", e.getMessage(), e);
+            String errorMessage = messageSource.getMessage("msg.user-controller.list.error", null, locale);
+            model.addAttribute("errorMessage", errorMessage);
         }
-        model.addAttribute("listUsers", listUsersDTOs);
         return "views/users/user-list";
     }
 
@@ -132,7 +131,7 @@ public class UsersController {
         logger.info(" Mostrando el formulario para nuevo usuario.");
         // Se crea un objeto Users vacío para enlazar los datos del formulario
         model.addAttribute("user", new UsersCreateDTO());
-        model.addAttribute("allRoles", roleRepository.listAllRoles());
+        model.addAttribute("allRoles", roleRepository.findAll());
         return "views/users/user-form";
     }
 
@@ -168,7 +167,7 @@ public class UsersController {
             model.addAttribute("user", new UsersUpdateDTO());
         }
         model.addAttribute("user", usersDTO);
-        model.addAttribute("allRoles", roleRepository.listAllRoles());
+        model.addAttribute("allRoles", roleRepository.findAll());
         return "views/users/user-form";
     }
 
@@ -196,7 +195,7 @@ public class UsersController {
         try {
 
             if (result.hasErrors()) {
-                model.addAttribute("allRoles", roleRepository.listAllRoles());
+                model.addAttribute("allRoles", roleRepository.findAll());
                 return "user-form"; // Vuelve al formulario con errores de campo
             }
 
@@ -218,7 +217,7 @@ public class UsersController {
                 userDTO.setLastPasswordChange(now);
                 userDTO.setPasswordExpiresAt(now.plusMonths(3));
             }
-            var roles = new HashSet<>(roleRepository.findAllByIds(userDTO.getRoleIds()));
+            var roles = new HashSet<>(roleRepository.findAllById(userDTO.getRoleIds()));
             User user = UsersMapper.toEntity(userDTO, roles);
             usersRepository.save(user);
             logger.info(" Usuario '{}' insertado con éxito.", user.getEmail());
@@ -272,7 +271,7 @@ public class UsersController {
             LocalDateTime passwordExpiresAt = lastPasswordChange.plusDays(PASSWORD_EXPIRY_DAYS);
             userDTO.setPasswordExpiresAt(passwordExpiresAt);
 
-            HashSet<Role> roles = new HashSet<>(roleRepository.findAllByIds(userDTO.getRoleIds()));
+            HashSet<Role> roles = new HashSet<>(roleRepository.findAllById(userDTO.getRoleIds()));
             User user = UsersMapper.toEntity(userDTO, roles);
             usersRepository.save(user);
             logger.info(" Usuario con ID {} actualizado con éxito.", user.getId());
