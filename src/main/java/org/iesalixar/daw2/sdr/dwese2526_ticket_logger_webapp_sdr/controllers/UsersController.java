@@ -86,7 +86,7 @@ public class UsersController {
             model.addAttribute("errorMessage", "Error al listar los usuarios.");
         }
 
-        return "views/user/user-list";
+        return "views/users/user-list";
     }
 
     @GetMapping("/new")
@@ -94,7 +94,7 @@ public class UsersController {
         logger.info("Mostrando formulario para nuevo usuario.");
         model.addAttribute("user", new UsersCreateDTO());
         model.addAttribute("allRoles", userService.findAllRoles());
-        return "views/user/user-form";
+        return "views/users/user-form";
     }
 
     @PostMapping("/insert")
@@ -108,7 +108,7 @@ public class UsersController {
 
         if (result.hasErrors()) {
             model.addAttribute("allRoles", userService.findAllRoles());
-            return "views/user/user-form";
+            return "views/users/user-form";
         }
 
         try {
@@ -137,7 +137,7 @@ public class UsersController {
             UsersUpdateDTO userDTO = userService.getForEdit(id);
             model.addAttribute("user", userDTO);
             model.addAttribute("allRoles", userService.findAllRoles());
-            return "views/user/user-form";
+            return "views/users/user-form";
 
         } catch (ResourceNotFoundException ex) {
             logger.warn("No se encontró usuario ID {}", id);
@@ -164,7 +164,7 @@ public class UsersController {
 
         if (result.hasErrors()) {
             model.addAttribute("allRoles", userService.findAllRoles());
-            return "views/user/user-form";
+            return "views/users/user-form";
         }
 
         try {
