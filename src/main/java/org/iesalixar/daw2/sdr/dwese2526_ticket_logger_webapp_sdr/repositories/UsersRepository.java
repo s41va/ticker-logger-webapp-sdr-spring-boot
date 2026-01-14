@@ -3,6 +3,8 @@ package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.repositories;
 
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -23,5 +25,8 @@ public interface UsersRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email) ;
     boolean existsByEmailAndIdNot(String email, Long id);
     Optional<User> findByEmail(String Email);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.id = :id")
+    Optional<User> findByIdWithRoles(@Param("id") Long id);
 
 }
