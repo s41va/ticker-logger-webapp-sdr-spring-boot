@@ -1,0 +1,9 @@
+package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.services;
+
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos.UserProfileFormDTO;
+import org.springframework.web.multipart.MultipartFile;
+
+public interface UserProfileService {
+    UserProfileFormDTO getFormByEmail(String email);
+    void updateProfile(UserProfileFormDTO profileDto, MultipartFile profileImageFile);
+}
