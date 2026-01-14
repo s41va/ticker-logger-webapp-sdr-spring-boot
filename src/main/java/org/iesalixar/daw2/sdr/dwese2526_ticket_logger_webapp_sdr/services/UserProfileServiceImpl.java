@@ -78,9 +78,29 @@ public class UserProfileServiceImpl implements UserProfileService{
         }
 
         if (isNew){
-
+            profile = UserProfileMapper.toNewEntity(profileDto, user);
         }else{
-
+            UserProfileMapper.copyToExistingEntity(profileDto, profile);
+        }
+        userProfileRepository.save(profile);
+    }
+    private void validateProfileImage(MultipartFile file){
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")){
+            throw new InvalidFileException(
+                    "userProfile",
+                    "profileImageFile",
+                    contentType,
+                    "Tipo de archivo no permitido"
+            );
+        }
+        if (file.getSize() > MAX_IMAGE_SIZE_BYTES){
+            throw new InvalidFileException(
+                    "userProfile",
+                    "profileImageFile",
+                    file.getSize(),
+                    "Archivo demasiado grande (maximo " + MAX_IMAGE_SIZE_BYTES + " bytes)"
+            );
         }
     }
 }
