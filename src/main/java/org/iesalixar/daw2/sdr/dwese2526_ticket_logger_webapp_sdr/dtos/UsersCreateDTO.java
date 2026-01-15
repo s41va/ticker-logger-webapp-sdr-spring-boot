@@ -5,59 +5,69 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * DTO reutilizable para crear usuarios.
+ */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@AllArgsConstructor
 public class UsersCreateDTO {
 
-    @NotNull(message = "{msg.user.id.notNull}")
+
+    // En este DTO este campo siempre vendrá null porque es una inserción (id autogenerado).
     private Long id;
 
-    @NotBlank(message = "{msg.user.email.notEmpty}")
-    @Size(max = 40, message = "{msg.user.email.size}") // Usando el constraint (varchar 40)
+
+    @Email(message = "{msg.user.email.invalid}")
+    @NotBlank(message = "{msg.user.username.notblank}")
+    @Size(min = 4, max = 100, message = "{msg.user.username.size}")
     private String email;
 
-    // 🔒 Password Hash (solo relevante para la entidad/almacenamiento)
-    // Este campo no suele validarse directamente en los DTOs de entrada,
-    // ya que la contraseña sin hash (rawPassword) es la que se valida primero.
-    // Si se mapeara, sería para asegurar el tamaño:
-    // @NotBlank(message = "{msg.user.passwordHash.notEmpty}")
-    // @Size(max = 500, message = "{msg.user.passwordHash.size}") // Usando el constraint (varchar 500)
-    @NotBlank(message = "{msg.user.passwordHash.notEmpty}")
-    @Size(max = 100, message = "{msg.user.passwordHash.size}")
+
+    @NotBlank(message = "{msg.user.passwordHash.notblank}")
+    @Size(min = 8, max = 500, message = "{msg.user.passwordHash.size}")
     private String passwordHash;
 
-    // 🟢 Estado de la cuenta (los booleanos se validan con @NotNull si es obligatorio en un DTO)
-    @NotNull(message = "{msg.user.active.notNull}")
-    private boolean active;
 
-    @NotNull(message = "{msg.user.accountNonLocked.notNull}")
-    private boolean accountNonLocked;
+    @NotNull(message = "{msg.user.active.notnull}")
+    private boolean active = Boolean.TRUE;
 
-    @NotNull(message = "{msg.user.emailVerified.notNull}")
-    private boolean emailVerified;
 
-    @NotNull(message = "{msg.user.mustChangePassword.notNull}")
-    private boolean mustChangePassword;
+    @NotNull(message = "{msg.user.accountNonLocked.notnull}")
+    private boolean accountNonLocked = Boolean.TRUE;
 
-    // 🕰️ Fechas (se validan con @NotNull)
-    @NotNull(message = "{msg.user.lastPasswordChange.notNull}")
+
+    @PastOrPresent(message = "{msg.user.lastPasswordChange.pastorpresent}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime lastPasswordChange;
 
-    @NotNull(message = "{msg.user.passwordExpiresAt.notNull}")
+
+    @FutureOrPresent(message = "{msg.user.passwordExpiresAt.futureorpresent}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime passwordExpiresAt;
 
-    // 🔢 Intentos de login fallidos (se validan con @NotNull y quizás un rango)
-    @NotNull(message = "{msg.user.failedLoginAttempts.notNull}")
-    @Min(value = 0, message = "{msg.user.failedLoginAttempts.min}")
-    private Integer failedLoginAttempts;
 
-    @NotEmpty(message = "{msg.user.roles.notEmpty}")
+    @Min(value = 0, message = "{msg.user.failedLoginAttempts.min}")
+    private Integer failedLoginAttempts = 0;
+
+
+    @NotNull(message = "{msg.user.emailVerified.notnull}")
+    private boolean emailVerified = Boolean.FALSE;
+
+
+    @NotNull(message = "{msg.user.mustChangePassword.notnull}")
+    private boolean mustChangePassword = Boolean.FALSE;
+
+
+    // ─────────────────────────────────────
+    // Roles seleccionados (ids de Role) - OBLIGATORIOS
+    // ─────────────────────────────────────
+    @NotEmpty(message = "{msg.user.roles.notempty}")
     private Set<Long> roleIds = new HashSet<>();
 }

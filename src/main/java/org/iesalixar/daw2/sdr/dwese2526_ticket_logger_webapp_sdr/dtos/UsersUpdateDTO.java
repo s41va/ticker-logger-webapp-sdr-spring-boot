@@ -1,58 +1,74 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.dtos;
 
 import jakarta.persistence.Column;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * DTO reutilizable para actualizar usuarios.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UsersUpdateDTO {
 
-    @NotNull(message = "{msg.user.id.notNull}")
+
+    @NotNull(message = "{msg.user.id.notnull}")
     private Long id;
 
 
-    @NotBlank(message = "{msg.user.email.notEmpty}")
-    @Size(max = 40, message = "{msg.user.email.size}")
+    @Email(message = "{msg.user.email.invalid}")
+    @NotBlank(message = "{msg.user.username.notblank}")
+    @Size(min = 4, max = 100, message = "{msg.user.username.size}")
     private String email;
 
 
-    @NotBlank(message = "{msg.user.passwordHash.notEmpty}")
-    @Size(max = 40, message = "{msg.user.passwordHash.size}")
+    @NotBlank(message = "{msg.user.passwordHash.notblank}")
+    @Size(min = 8, max = 500, message = "{msg.user.passwordHash.size}")
     private String passwordHash;
 
 
-    @NotNull(message = "{msg.user.active.notNull}")
-    private Boolean active; // Usamos Boolean objeto para permitir la validación @NotNull
+    @NotNull(message = "{msg.user.active.notnull}")
+    private boolean active;
 
-    @NotNull(message = "{msg.user.accountNonLocked.notNull}")
-    private Boolean accountNonLocked;
 
-    @NotNull(message = "{msg.user.lastPasswordChange.notNull}")
+    @NotNull(message = "{msg.user.accountNonLocked.notnull}")
+    private boolean accountNonLocked;
+
+
+    @PastOrPresent(message = "{msg.user.lastPasswordChange.pastorpresent}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime lastPasswordChange;
 
+
+    @FutureOrPresent(message = "{msg.user.passwordExpiresAt.futureorpresent}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime passwordExpiresAt;
 
+
+    @Min(value = 0, message = "{msg.user.failedLoginAttempts.min}")
     private Integer failedLoginAttempts;
 
-    @NotNull(message = "{msg.user.emailVerified.notNull}")
-    private Boolean emailVerified;
 
-    @NotNull(message = "{msg.user.mustChangePassword.notNull}")
-    private Boolean mustChangePassword;
+    @NotNull(message = "{msg.user.emailVerified.notnull}")
+    private boolean emailVerified;
 
-    @NotEmpty(message = "{msg.user.roles.notEmpty}")
+
+    @NotNull(message = "{msg.user.mustChangePassword.notnull}")
+    private boolean mustChangePassword;
+
+
+    // ─────────────────────────────────────
+    // Roles seleccionados (ids de Role) - OBLIGATORIOS
+    // ─────────────────────────────────────
+    @NotEmpty(message = "{msg.user.roles.notempty}")
     private Set<Long> roleIds = new HashSet<>();
 }

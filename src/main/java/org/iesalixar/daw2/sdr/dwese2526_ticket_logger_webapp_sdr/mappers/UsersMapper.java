@@ -13,26 +13,41 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Mapper utilitario entre la entidad {@link User} y sus DTOs.
+ * Implementación simple sin frameworks de mapeo.
+ */
 public class UsersMapper {
 
+
+    // ─────────────────────────────────────────
+    // Entity → DTO (listado/tabla básico)
+    // ─────────────────────────────────────────
+
+
     /**
-     * Convierte una entidad {@link User} a {@link } (vista simple).
-     * Incluye campos de estado de la cuenta relevantes para una vista de lista.
+     * Convierte una entidad {@link User} a {@link UsersDTO}.
      */
-    public static UsersDTO toDTO(User entity){
+    public static UsersDTO toDTO(User entity) {
         if (entity == null) return null;
+
+
         UsersDTO dto = new UsersDTO();
         dto.setId(entity.getId());
         dto.setEmail(entity.getEmail());
-
+        dto.setPasswordHash(entity.getPasswordHash());
+        dto.setActive(entity.isActive());
+        dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setLastPasswordChange(entity.getLastPasswordChange());
         dto.setPasswordExpiresAt(entity.getPasswordExpiresAt());
         dto.setFailedLoginAttempts(entity.getFailedLoginAttempts());
-        dto.setActive(entity.isActive()); // Se incluye el estado de actividad
-        dto.setAccountNonLocked(entity.isAccountNonLocked()); // Se incluye el estado de bloqueo
-        dto.setEmailVerified(entity.isEmailVerified()); // Se incluye el estado de verificación
+        dto.setEmailVerified(entity.isEmailVerified());
         dto.setMustChangePassword(entity.isMustChangePassword());
 
+
+        // ────────────────────────────────
+        // Cargar roles si existen
+        // ────────────────────────────────
         if (entity.getRoles() != null && !entity.getRoles().isEmpty()) {
             Set<String> roleNames = entity.getRoles().stream()
                     .map(Role::getName) // o Role::getDisplayName si prefieres
@@ -42,31 +57,37 @@ public class UsersMapper {
             dto.setRoles(new HashSet<>());
         }
 
+
         return dto;
     }
 
+
     /**
-     * Convierte una lista de entidades {@link User} a {@link UsersDTO}.
+     * Convierte una lista de entidades {@link User} a una lista de {@link UsersDTO}.
      */
-    public static List<UsersDTO> toDTOList(List<User> entities){
+    public static List<UsersDTO> toDTOList(List<User> entities) {
         if (entities == null) return List.of();
-        return entities.stream().map(UsersMapper::toDTO).collect(Collectors.toList());
+        return entities.stream().map(UsersMapper::toDTO).toList();
     }
 
-    //
-    // Entity -> DTO (detalle con todos los campos de estado y seguridad)
-    //
+
+    // ─────────────────────────────────────────
+    // Entity → DTO (detalle)
+    // ─────────────────────────────────────────
+
+
     /**
-     * Convierte una {@link User} a {@link UsersDetailDTO}, mapeando todos sus campos de seguridad y estado (incluyendo roles).
+     * Convierte una entidad {@link User} a {@link UsersDetailDTO}.
+     * Pensado para vistas de detalle donde, en el futuro, se puedan añadir
+     * listas de roles, tickets, etc.
      */
     public static UsersDetailDTO toDetailDTO(User entity) {
         if (entity == null) return null;
 
+
         UsersDetailDTO dto = new UsersDetailDTO();
         dto.setId(entity.getId());
         dto.setEmail(entity.getEmail());
-
-        // Mapeo de campos de seguridad y estado
         dto.setActive(entity.isActive());
         dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setLastPasswordChange(entity.getLastPasswordChange());
@@ -76,9 +97,13 @@ public class UsersMapper {
         dto.setMustChangePassword(entity.isMustChangePassword());
 
 
+        // ────────────────────────────────
+        // Cargar datos del perfil si existe
+        // ────────────────────────────────
         UserProfile profile = entity.getProfile();
 
-        if (profile != null){
+
+        if (profile != null) {
             dto.setFirstName(profile.getFirstName());
             dto.setLastName(profile.getLastName());
             dto.setPhoneNumber(profile.getPhoneNumber());
@@ -87,142 +112,181 @@ public class UsersMapper {
             dto.setLocale(profile.getLocale());
         }
 
-        // Asume que el campo 'roles' existe en la entidad User
-        // dto.setRoles(toRoleList(entity.getRoles()));
 
-        if (entity.getRoles() != null && !entity.getRoles().isEmpty()){
+        // ────────────────────────────────
+        // Cargar roles si existen
+        // ────────────────────────────────
+        if (entity.getRoles() != null && !entity.getRoles().isEmpty()) {
             Set<String> roleNames = entity.getRoles().stream()
-                    .map(Role::getName)
+                    .map(Role::getName) // o Role::getDisplayName si prefieres el nombre legible
                     .collect(Collectors.toSet());
             dto.setRoles(roleNames);
-        }else{
-            dto.setRoles(new HashSet<>());
+        } else {
+            dto.setRoles(new HashSet<>()); // para evitar nulls en la vista
         }
+
+
+
+
         return dto;
-    }
-
-    //
-    // DTO -> Entity (Creación)
-    //
-    /**
-     * Convierte un DTO de creación {@link UsersCreateDTO} a la entidad {@link User}.
-     * Solo mapea los campos que el usuario proporciona inicialmente (username y quizás la contraseña temporal).
-     */
-    public static User toEntity(UsersCreateDTO dto){
-        if (dto == null) return null;
-        User e = new User();
-        e.setEmail(dto.getEmail());
-
-        // Los campos de seguridad/estado se suelen inicializar en el servicio o constructor:
-        e.setPasswordHash(dto.getPasswordHash()); // Se manejaría en el servicio
-        e.setActive(true); // El usuario está activo por defecto
-        e.setAccountNonLocked(true); // No bloqueado por defecto
-        e.setLastPasswordChange(dto.getLastPasswordChange());
-        e.setPasswordExpiresAt(dto.getPasswordExpiresAt());
-        e.setFailedLoginAttempts(dto.getFailedLoginAttempts()); // Intentos a cero
-        e.setEmailVerified(false); // Pendiente de verificación
-        e.setMustChangePassword(true); // Se fuerza el cambio si se genera una contraseña temporal
-        // Las fechas de cambio/expiración se establecen en el servicio
-
-        return e;
-    }
-
-    //
-    // Entity -> UpdateDTO
-    //
-    public static User toEntity(UsersUpdateDTO dto){
-        if (dto == null) return null;
-
-        User e = new User();
-        e.setId(dto.getId());
-        e.setEmail(dto.getEmail());
-        e.setPasswordHash(dto.getPasswordHash());
-        e.setActive(dto.getActive()); // El usuario está activo por defecto
-        e.setAccountNonLocked(dto.getAccountNonLocked()); // No bloqueado por defecto
-        e.setEmailVerified(dto.getEmailVerified()); // Pendiente de verificación
-        e.setMustChangePassword(dto.getMustChangePassword()); // Se fuerza el cambio si se genera una contraseña temporal
-        e.setLastPasswordChange(dto.getLastPasswordChange());
-        e.setPasswordExpiresAt(dto.getPasswordExpiresAt());
-        e.setFailedLoginAttempts(dto.getFailedLoginAttempts());
-
-        return e;
     }
 
 
     /**
      * Convierte una entidad {@link User} a {@link UsersUpdateDTO}.
-     * Este DTO es útil para recuperar el estado actual para una edición.
+     * Útil cuando quieres precargar el formulario de edición.
      */
     public static UsersUpdateDTO toUpdateDTO(User entity) {
         if (entity == null) return null;
+
+
         UsersUpdateDTO dto = new UsersUpdateDTO();
         dto.setId(entity.getId());
         dto.setEmail(entity.getEmail());
-
-        // Campos de estado que un administrador podría querer actualizar
+        dto.setPasswordHash(entity.getPasswordHash());
+        dto.setActive(entity.isActive());
+        dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setLastPasswordChange(entity.getLastPasswordChange());
         dto.setPasswordExpiresAt(entity.getPasswordExpiresAt());
-        dto.setActive(entity.isActive());
         dto.setFailedLoginAttempts(entity.getFailedLoginAttempts());
-        dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setEmailVerified(entity.isEmailVerified());
         dto.setMustChangePassword(entity.isMustChangePassword());
 
-        if (entity.getRoles() != null){
+
+        // ─────────────────────────────────────
+        // Rellenar roleIds a partir de entity.roles
+        // ─────────────────────────────────────
+        if (entity.getRoles() != null) {
             Set<Long> roleIds = entity.getRoles().stream()
                     .map(Role::getId)
                     .collect(Collectors.toSet());
             dto.setRoleIds(roleIds);
         }
 
+
+
+
         return dto;
     }
 
-    //
-    // DTO -> Entity (Copia a entidad existente)
-    //
+
+    // ─────────────────────────────────────────
+    // DTO (create/update) → Entity
+    // ─────────────────────────────────────────
+
+
     /**
-     * Copia las propiedades de un DTO de actualización {@link UsersUpdateDTO} a una entidad {@link User} **existente**.
+     * Crea una nueva entidad {@link User} desde un {@link UsersCreateDTO}.
+     * El id se deja null para que se autogenere.
      */
-    public static void copyToExistingEntity(UsersUpdateDTO dto, User entity){
-        if (dto == null || entity == null) return;
-
-        // El nombre de usuario puede ser editable o no, depende de la lógica de negocio
-        entity.setEmail(dto.getEmail());
-
-        // Campos de estado que se pueden actualizar desde el DTO
-        entity.setActive(dto.getActive());
-        entity.setAccountNonLocked(dto.getAccountNonLocked());
-        entity.setEmailVerified(dto.getEmailVerified());
-        entity.setMustChangePassword(dto.getMustChangePassword());
-
-        if (dto.getFailedLoginAttempts() != null ) entity.setFailedLoginAttempts(dto.getFailedLoginAttempts());
-        if (dto.getLastPasswordChange() != null) entity.setLastPasswordChange(dto.getLastPasswordChange());
-        if (dto.getPasswordExpiresAt() != null ) entity.setPasswordExpiresAt(dto.getPasswordExpiresAt());
-        // NOTA: Los campos failedLoginAttempts, passwordHash y las fechas
-        // NO deberían mapearse directamente, sino ser gestionados en la capa de Servicio.
-        // Ej: Si accountNonLocked cambia a true, el Servicio reiniciaría failedLoginAttempts.
-    }
-
-    // Si la entidad tiene Roles, necesitarías estas funciones auxiliares (como en el ejemplo de Region):
-    /*
-    public static RoleDTO toRoleDTO(Role r) { ... }
-    public static List<RoleDTO> toRoleList(List<Role> roles) { ... }
-    */
-
-    public static User toEntity(UsersCreateDTO dto, Set<Role> roles){
+    public static User toEntity(UsersCreateDTO dto) {
         if (dto == null) return null;
 
-        User e = toEntity(dto);
+
+        User e = new User();
+        e.setEmail(dto.getEmail());
+        e.setPasswordHash(dto.getPasswordHash());
+        e.setActive(dto.isActive());
+        e.setAccountNonLocked(dto.isAccountNonLocked());
+        e.setLastPasswordChange(dto.getLastPasswordChange());
+        e.setPasswordExpiresAt(dto.getPasswordExpiresAt());
+        e.setFailedLoginAttempts(dto.getFailedLoginAttempts());
+        e.setEmailVerified(dto.isEmailVerified());
+        e.setMustChangePassword(dto.isMustChangePassword());
+        return e;
+    }
+
+
+    /**
+     * Crea una nueva entidad {@link User} desde un {@link UsersUpdateDTO}.
+     * Útil si trabajas con update por reemplazo completo.
+     * Si prefieres conservar relaciones u otros campos, carga antes la entidad
+     * desde BD y usa {@link #copyToExistingEntity(UsersUpdateDTO, User)}.
+     */
+    public static User toEntity(UsersUpdateDTO dto) {
+        if (dto == null) return null;
+
+
+        User e = new User();
+        e.setId(dto.getId());
+        e.setEmail(dto.getEmail());
+        e.setPasswordHash(dto.getPasswordHash());
+        e.setActive(dto.isActive());
+        e.setAccountNonLocked(dto.isAccountNonLocked());
+        e.setLastPasswordChange(dto.getLastPasswordChange());
+        e.setPasswordExpiresAt(dto.getPasswordExpiresAt());
+        e.setFailedLoginAttempts(dto.getFailedLoginAttempts());
+        e.setEmailVerified(dto.isEmailVerified());
+        e.setMustChangePassword(dto.isMustChangePassword());
+        return e;
+    }
+
+
+    /**
+     * Copia los campos editables de {@link UsersUpdateDTO} sobre una entidad {@link User} existente.
+     * Recomendado cuando quieres mantener el estado de persistencia y futuras relaciones
+     * (por ejemplo roles, tickets, etc.).
+     */
+    public static void copyToExistingEntity(UsersUpdateDTO dto, User entity) {
+        if (dto == null || entity == null) return;
+
+
+        entity.setEmail(dto.getEmail());
+        entity.setPasswordHash(dto.getPasswordHash());
+        entity.setActive(dto.isActive());
+        entity.setAccountNonLocked(dto.isAccountNonLocked());
+        entity.setLastPasswordChange(dto.getLastPasswordChange());
+        entity.setPasswordExpiresAt(dto.getPasswordExpiresAt());
+        entity.setFailedLoginAttempts(dto.getFailedLoginAttempts());
+        entity.setEmailVerified(dto.isEmailVerified());
+        entity.setMustChangePassword(dto.isMustChangePassword());
+        // No tocar entity.setId(...)
+        // Ni relaciones futuras como entity.getRoles(), etc.
+    }
+
+
+    /**
+     * Crea una nueva entidad {@link User} desde un {@link UsersCreateDTO}
+     * y un conjunto de {@link Role} ya resueltos.
+     *
+     * Este método es útil cuando, desde el controlador/servicio,
+     * ya has convertido los roleIds del DTO en entidades Role usando un DAO.
+     */
+    public static User toEntity(UsersCreateDTO dto, Set<Role> roles) {
+        if (dto == null) return null;
+
+
+        User e = toEntity(dto); // reutilizamos la lógica existente
         e.setRoles(roles);
         return e;
     }
 
 
-    public static User toEntity(UsersUpdateDTO dto, Set<Role> roles){
-        if (dto == null)  return null;
-        User e = toEntity(dto);
+    /**
+     * Crea una nueva entidad {@link User} desde un {@link UsersUpdateDTO}
+     * y un conjunto de {@link Role} ya resueltos.
+     *
+     * Útil si trabajas con update por reemplazo completo.
+     */
+    public static User toEntity(UsersUpdateDTO dto, Set<Role> roles) {
+        if (dto == null) return null;
+
+
+        User e = toEntity(dto); // reutilizamos la lógica existente
         e.setRoles(roles);
         return e;
+    }
+
+
+    /**
+     * Variante de copyToExistingEntity que también actualiza los roles.
+     * Útil si prefieres el patrón "load entity + copy + save".
+     */
+    public static void copyToExistingEntity(UsersUpdateDTO dto, User entity, Set<Role> roles) {
+        if (dto == null || entity == null) return;
+
+
+        copyToExistingEntity(dto, entity); // copia campos básicos
+        entity.setRoles(roles);            // actualiza roles
     }
 }

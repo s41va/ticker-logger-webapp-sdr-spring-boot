@@ -14,26 +14,41 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UsersDTO {
+
 
     private Long id;
 
-    @NotEmpty(message = "{msg.user.email.notEmpty}")
-    @Size(max = 40, message = "{msg.user.email.size}")
+
     private String email;
 
-    @NotEmpty(message = "{msg.user.passwordHash.notEmpty}")
-    @Size(max = 500, message = "{msg.user.passwordHash.size}")
+
+    // En este CRUD inicial tratamos la contraseña como texto plano,
+    // mapeando directamente el campo passwordHash de la entidad.
     private String passwordHash;
 
 
     private boolean active;
+
+
     private boolean accountNonLocked;
+
+
     private LocalDateTime lastPasswordChange;
+
+
     private LocalDateTime passwordExpiresAt;
+
+
     private Integer failedLoginAttempts;
+
+
     private boolean emailVerified;
+
+
     private boolean mustChangePassword;
+
+
+    // Roles asociados al usuario (nombres técnicos: ROLE_ADMIN, ROLE_USER, etc.)
     private Set<String> roles;
 }

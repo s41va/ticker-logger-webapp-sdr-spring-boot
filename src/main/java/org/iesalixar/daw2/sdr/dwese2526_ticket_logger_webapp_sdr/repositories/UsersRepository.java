@@ -1,7 +1,9 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.repositories;
 
 
+import jakarta.persistence.Entity;
 import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.entities.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,6 +26,7 @@ public interface UsersRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email) ;
     boolean existsByEmailAndIdNot(String email, Long id);
+    @EntityGraph(attributePaths = "roles")
     Optional<User> findByEmail(String Email);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.id = :id")

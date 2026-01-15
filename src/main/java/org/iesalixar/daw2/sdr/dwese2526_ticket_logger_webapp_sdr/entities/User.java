@@ -9,55 +9,74 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@AllArgsConstructor
+/**
+ * Entidad JPA para la tabla 'users'.
+ */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@ToString(onlyExplicitlyIncluded = true)
 @Table(name = "users")
 public class User {
 
+
+    /** BIGINT AUTO_INCREMENT PRIMARY KEY */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+    /** VARCHAR(100) NOT NULL UNIQUE */
     @Column(name = "email", nullable = false, unique = true, length = 40)
     private String email;
 
 
-    // Constraints para passwordHash (varchar 500)
-
-    @Column(name="password_hash", nullable = false, length = 500)
+    /** VARCHAR(500) NOT NULL */
+    @Column(name = "password_hash", nullable = false, length = 500)
     private String passwordHash;
 
-    @Column(name="active", nullable = false)
-    private boolean active = Boolean.TRUE;
 
+    /** BOOLEAN NOT NULL DEFAULT TRUE */
+    @Column(name = "active", nullable = false)
+    private boolean active;
+
+
+    /** BOOLEAN NOT NULL DEFAULT TRUE */
     @Column(name = "account_non_locked", nullable = false)
-    private boolean accountNonLocked = Boolean.TRUE;
+    private boolean accountNonLocked;
 
+
+    /** DATETIME NULL */
     @Column(name = "last_password_change")
     private LocalDateTime lastPasswordChange;
 
+
+    /** DATETIME NULL */
     @Column(name = "password_expires_at")
     private LocalDateTime passwordExpiresAt;
 
+
+    /** INT DEFAULT 0 */
     @Column(name = "failed_login_attempts", nullable = false)
-    private Integer failedLoginAttempts;
+    private Integer failedLoginAttempts = 0;
 
+
+    /** BOOLEAN NOT NULL DEFAULT FALSE */
     @Column(name = "email_verified", nullable = false)
-    private boolean emailVerified = Boolean.FALSE;
+    private boolean emailVerified;
 
+
+    /** BOOLEAN NOT NULL DEFAULT FALSE */
     @Column(name = "must_change_password", nullable = false)
-    private boolean mustChangePassword = Boolean.FALSE;
+    private boolean mustChangePassword;
 
 
-    @EqualsAndHashCode.Exclude
+    /** Relación 1:1 con la entidad UserProfile */
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private UserProfile profile;
 
 
-    @EqualsAndHashCode.Exclude
+    /** Relación N:M con Role a través de la tabla intermedia 'user_roles'. */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
@@ -67,31 +86,19 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
 
-//    @Override
-//    public int hashCode() {
-//        // Replace: return userProfile.hashCode();  <-- This causes the recursion
-//
-//        // With: return id != null ? id.hashCode() : 0;
-//
-//        // OR, if using Lombok/IDE generated methods, exclude the UserProfile field:
-//        return Objects.hash(email, passwordHash, active, accountNonLocked, lastPasswordChange, failedLoginAttempts, emailVerified, mustChangePassword, roles); // Exclude the UserProfile object
-//    }
 
-    /**
-     *
-     * @param email (varchar 40) → identificador único de login.
-     * @param passwordHash (varchar 500)→ contraseña de momento en texto plano.
-     * @param active (Boolean)→ indica si la cuenta está activa o bloqueada.
-     * @param accountNonLocked (Boolean)→ campo para saber si una cuenta está bloqueada por intentos fallidos.
-     * @param lastPasswordChange (LocalDateTime) → fecha del último cambio de contraseña → sirve para comprobar si han pasado más de 3 meses.
-     * @param passwordExpiresAt (LocalDateTime) → fecha exacta de caducidad (calculada a partir de lastPasswordChange), es decir, tres meses posterior a lastPasswordChange.
-     * @param failedLoginAttempts (Integer) → número de logins con intentos fallidos.
-     * @param emailVerified (Boolean) → si el correo fue validado.
-     * @param mustChangePassword (Boolean) → fuerza a cambiar la contraseña en el próximo login.
-     */
-    public User(String email, String passwordHash, boolean active, boolean accountNonLocked,
-                LocalDateTime lastPasswordChange, LocalDateTime passwordExpiresAt, int failedLoginAttempts, boolean emailVerified, boolean mustChangePassword) {
-        this.email = email;
+
+    /** Constructor completo (sin id autogenerado). */
+    public User(String username,
+                String passwordHash,
+                Boolean active,
+                Boolean accountNonLocked,
+                LocalDateTime lastPasswordChange,
+                LocalDateTime passwordExpiresAt,
+                Integer failedLoginAttempts,
+                Boolean emailVerified,
+                Boolean mustChangePassword) {
+        this.email = username;
         this.passwordHash = passwordHash;
         this.active = active;
         this.accountNonLocked = accountNonLocked;

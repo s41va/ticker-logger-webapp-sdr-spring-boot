@@ -1,9 +1,12 @@
 package org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.config;
 
+import org.iesalixar.daw2.sdr.dwese2526_ticket_logger_webapp_sdr.services.CustomUserDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,6 +23,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
     /**
      * Configura el filtro de seguridad para las solicitudes HTTP, especificando las
@@ -73,36 +78,17 @@ public class SecurityConfig {
      * @return una instancia de {@link UserDetailsService} que proporciona autenticación en memoria.
      */
     @Bean
-    public UserDetailsService userDetailsService() {
-        logger.info("Entrando en el método userDetailsService");
+    public DaoAuthenticationProvider authenticationProvider() {
+        logger.info("Entrando en el método authenticationProvider");
 
 
-        logger.debug("Creando usuario con rol USER");
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder().encode("password"))
-                .roles("USER")
-                .build();
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
 
 
-        logger.debug("Creando usuario con rol ADMIN");
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("password"))
-                .roles("ADMIN")
-                .build();
-
-
-        logger.debug("Creando usuario con rol MANAGER");
-        UserDetails manager = User.builder()
-                .username("manager")
-                .password(passwordEncoder().encode("password"))
-                .roles("MANAGER")
-                .build();
-
-
-        logger.info("Saliendo del método userDetailsService");
-        return new InMemoryUserDetailsManager(user, admin, manager);
+        logger.info("Saliendo del método authenticationProvider");
+        return provider;
     }
 
 

@@ -26,10 +26,10 @@ INSERT IGNORE INTO users (
    last_password_change, password_expires_at, failed_login_attempts,
    email_verified, must_change_password
 ) VALUES
-(1, 'admin@app.local',        'admin123',  TRUE,  TRUE,  NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 0, TRUE,  FALSE),
-(2, 'jdoe@app.local',         '1234',      TRUE,  TRUE,  NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 1, FALSE, FALSE),
-(3, 'maria@app.local',        'changeme',  TRUE,  TRUE,  NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 0, TRUE,  TRUE ),
-(4, 'blockeduser@app.local',  'secret',    FALSE, FALSE, NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 5, FALSE, FALSE);
+(1, 'admin@app.local',        '$2a$12$6jTyc1yBWM1C/glHtRB0yed6JfaucVcsYCzvWzCGPyxENjT3.nrku',  TRUE,  TRUE,  NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 0, TRUE,  FALSE),
+(2, 'jdoe@app.local',         '$2a$12$6jTyc1yBWM1C/glHtRB0yed6JfaucVcsYCzvWzCGPyxENjT3.nrku',      TRUE,  TRUE,  NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 1, FALSE, FALSE),
+(3, 'maria@app.local',        '$2a$12$6jTyc1yBWM1C/glHtRB0yed6JfaucVcsYCzvWzCGPyxENjT3.nrku',  TRUE,  TRUE,  NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 0, TRUE,  TRUE ),
+(4, 'blockeduser@app.local',  '$2a$12$6jTyc1yBWM1C/glHtRB0yed6JfaucVcsYCzvWzCGPyxENjT3.nrku',    FALSE, FALSE, NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 5, FALSE, FALSE);
 
 INSERT IGNORE INTO provinces (code, name, region_id) VALUES
 ('01', 'Araba/Álava', 16),
