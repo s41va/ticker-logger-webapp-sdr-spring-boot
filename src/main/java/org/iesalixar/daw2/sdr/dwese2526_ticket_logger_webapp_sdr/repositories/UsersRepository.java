@@ -32,5 +32,12 @@ public interface UsersRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.id = :id")
     Optional<User> findByIdWithRoles(@Param("id") Long id);
 
-
+    /**
+     * Localiza un usuario por email (ignorando mayúsculas/minúsculas) y asegura que sus roles
+     * queden cargados en la misma consulta.
+     *
+     * @param email email del usuario (usado como identificador/username del sistema).
+     * @return {@link java.util.Optional} con el usuario y sus roles; {@code Optional.empty()} si no existe.
+     */
+    Optional<User> findByEmailIgnoreCase(String email);
 }
