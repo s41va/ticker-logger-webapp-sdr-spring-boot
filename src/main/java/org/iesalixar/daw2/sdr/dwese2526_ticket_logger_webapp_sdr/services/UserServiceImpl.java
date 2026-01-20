@@ -82,8 +82,8 @@ public class UserServiceImpl implements UserService{
 
         // 4. Recuperar roles
         Set<Role> roles = new HashSet<>(roleRepository.findAllById(dto.getRoleIds()));
-
-        UsersMapper.toEntity(dto, roles);
+        UsersMapper.copyToExistingEntity(dto, user ,roles);
+       // UsersMapper.toEntity(dto, roles);
         usersRepository.save(user);
     }
 

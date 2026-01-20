@@ -35,7 +35,7 @@ public class UsersMapper {
         UsersDTO dto = new UsersDTO();
         dto.setId(entity.getId());
         dto.setEmail(entity.getEmail());
-        dto.setPasswordHash(entity.getPasswordHash());
+        /*dto.setPasswordHash(entity.getPasswordHash());*/
         dto.setActive(entity.isActive());
         dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setLastPasswordChange(entity.getLastPasswordChange());
@@ -143,7 +143,7 @@ public class UsersMapper {
         UsersUpdateDTO dto = new UsersUpdateDTO();
         dto.setId(entity.getId());
         dto.setEmail(entity.getEmail());
-        dto.setPasswordHash(entity.getPasswordHash());
+        /*dto.setPasswordHash(entity.getPasswordHash());*/
         dto.setActive(entity.isActive());
         dto.setAccountNonLocked(entity.isAccountNonLocked());
         dto.setLastPasswordChange(entity.getLastPasswordChange());
@@ -185,7 +185,7 @@ public class UsersMapper {
 
         User e = new User();
         e.setEmail(dto.getEmail());
-        e.setPasswordHash(dto.getPasswordHash());
+        /*e.setPasswordHash(dto.getPasswordHash());*/
         e.setActive(dto.isActive());
         e.setAccountNonLocked(dto.isAccountNonLocked());
         e.setLastPasswordChange(dto.getLastPasswordChange());
@@ -210,7 +210,7 @@ public class UsersMapper {
         User e = new User();
         e.setId(dto.getId());
         e.setEmail(dto.getEmail());
-        e.setPasswordHash(dto.getPasswordHash());
+        /*e.setPasswordHash(dto.getPasswordHash());*/
         e.setActive(dto.isActive());
         e.setAccountNonLocked(dto.isAccountNonLocked());
         e.setLastPasswordChange(dto.getLastPasswordChange());
@@ -232,7 +232,7 @@ public class UsersMapper {
 
 
         entity.setEmail(dto.getEmail());
-        entity.setPasswordHash(dto.getPasswordHash());
+        /*entity.setPasswordHash(dto.getPasswordHash());*/
         entity.setActive(dto.isActive());
         entity.setAccountNonLocked(dto.isAccountNonLocked());
         entity.setLastPasswordChange(dto.getLastPasswordChange());

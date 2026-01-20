@@ -26,12 +26,12 @@
                 <div th:if="${#fields.hasErrors('email')}" class="text-danger" th:errors="*{email}" ></div>
             </div>
 
-            <div class="mb-3">
+            <!--<div class="mb-3">
                 <label for="passwordHash" class="form-label" th:text="#{msg.user-form.password}"></label>
                 <input type="text" th:field="*{passwordHash}" id="passwordHash" class="form-control"
                        maxlength="500" required />
                 <div th:if="${#fields.hasErrors('passwordHash')}" class="text-danger" th:errors="*{passwordHash}"></div>
-            </div>
+            </div>-->
 
             <div class="mb-3">
                 <label for="failedLoginAttempts" class="form-label" th:text="#{msg.user-form.failedLoginAttempts}"></label>

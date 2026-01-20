@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.print.attribute.standard.PrinterInfo;
+import java.security.Principal;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -48,12 +50,12 @@ public class UserProfileController {
     private FileStorageService fileStorageService;
 
     @GetMapping("/edit")
-    public String showProfileForm(Model model, Locale locale) {
-        String FIXED_EMAIL = "admin@app.local";
-        logger.info("Mostrando formulario de perfil para el usuario fijo {}", FIXED_EMAIL);
+    public String showProfileForm(Model model, Locale locale, Principal principal) {
+        String email = principal.getName();
+        logger.info("Mostrando formulario de perfil para el usuario fijo {}", email);
 
         try{
-            UserProfileFormDTO formDTO = userProfileService.getFormByEmail(FIXED_EMAIL);
+            UserProfileFormDTO formDTO = userProfileService.getFormByEmail(email);
             model.addAttribute("userProfileForm", formDTO);
             return "views/user-profile/user-profile-form";
         } catch (ResourceNotFoundException e) {
@@ -75,17 +77,20 @@ public class UserProfileController {
             BindingResult result,
             @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
             RedirectAttributes redirectAttributes,
-            Locale locale) {
+            Locale locale,
+            Principal principal) {
 
-        logger.info("Actualizando perfil para el usuario con ID {}", profileDto.getUserId());
+        String email = principal.getName();
+
+        logger.info("Actualizando perfil para el usuario con ID {}", email);
 
         if (result.hasErrors()) {
-            logger.warn("Errores de validación en el formulario de perfil para userId={}", profileDto.getUserId());
+            logger.warn("Errores de validación en el formulario de perfil para email={}", email);
             return "views/user-profile/user-profile-form";
         }
 
         try {
-            userProfileService.updateProfile(profileDto, profileImageFile);
+            userProfileService.updateProfile(email, profileDto, profileImageFile);
             String successMessage = messageSource.getMessage("msg.userProfile.success", null, locale);
             redirectAttributes.addFlashAttribute("successMessage", successMessage);
         }catch (ResourceNotFoundException ex){

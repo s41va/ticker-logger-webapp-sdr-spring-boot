@@ -25,7 +25,7 @@ public class UsersDTO {
 
     // En este CRUD inicial tratamos la contraseña como texto plano,
     // mapeando directamente el campo passwordHash de la entidad.
-    private String passwordHash;
+    /*private String passwordHash;*/
 
 
     private boolean active;

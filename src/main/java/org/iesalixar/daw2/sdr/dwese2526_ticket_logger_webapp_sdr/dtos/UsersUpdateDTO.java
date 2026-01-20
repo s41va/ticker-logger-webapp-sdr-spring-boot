@@ -31,10 +31,9 @@ public class UsersUpdateDTO {
     private String email;
 
 
-    @NotBlank(message = "{msg.user.passwordHash.notblank}")
+    /*@NotBlank(message = "{msg.user.passwordHash.notblank}")
     @Size(min = 8, max = 500, message = "{msg.user.passwordHash.size}")
-    private String passwordHash;
-
+    private String passwordHash;*/
 
     @NotNull(message = "{msg.user.active.notnull}")
     private boolean active;
