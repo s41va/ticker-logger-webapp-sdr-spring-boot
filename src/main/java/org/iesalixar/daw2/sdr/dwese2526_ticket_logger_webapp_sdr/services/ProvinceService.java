@@ -15,5 +15,8 @@ public interface ProvinceService {
     void update(ProvinceUpdateDTO dto);
     void delete(Long id);
     ProvinceDetailDTO getDetail(Long id);
-    List<RegionDTO> findAllRegions();
+    List<RegionDTO> listRegionsForSelect();
+
+
+
 }

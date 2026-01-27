@@ -77,8 +77,10 @@ public class ProvinceServiceImpl implements ProvinceService{
     }
 
     @Override
-    public List<RegionDTO> findAllRegions() {
+    public List<RegionDTO> listRegionsForSelect() {
         List<Region> regions = regionRepository.findAll();
         return RegionMapper.toDTOList(regions);
     }
+
+
 }

@@ -47,7 +47,7 @@ public class ProvinceController {
     @GetMapping
     public String listProvinces(
             @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-            Model model) {
+            Model model, Locale locale) {
 
         logger.info("Listando provincias page={}, size={}, sort={}",
                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
@@ -67,8 +67,9 @@ public class ProvinceController {
             model.addAttribute("sortParam", sortParam);
 
         } catch (Exception e) {
-            logger.error("Error al listar las provincias: {}", e.getMessage(), e);
-            model.addAttribute("errorMessage", "Error al listar las provincias.");
+            logger.error("Error al listar las provincias: {}", e.getMessage());
+            String errorMessage = messageSource.getMessage("msg.province-controller.list.error", null, locale);
+            model.addAttribute("errorMessage", errorMessage);
         }
 
         return "views/province/province-list";
@@ -78,7 +79,7 @@ public class ProvinceController {
     public String showNewForm(Model model, Locale locale) {
         logger.info("Mostrando formulario para nueva provincia.");
         try {
-            List<RegionDTO> listRegionsDTOs = provinceService.findAllRegions();
+            List<RegionDTO> listRegionsDTOs = provinceService.listRegionsForSelect();
 
             model.addAttribute("province", new ProvinceCreateDTO());
             model.addAttribute("listRegions", listRegionsDTOs);
@@ -100,7 +101,7 @@ public class ProvinceController {
         logger.info("Insertando nueva provincia con código {}", provinceDTO.getCode());
 
         if (result.hasErrors()) {
-            List<RegionDTO> listRegionsDTOs = provinceService.findAllRegions();
+            List<RegionDTO> listRegionsDTOs = provinceService.listRegionsForSelect();
             model.addAttribute("listRegions", listRegionsDTOs);
             return "views/province/province-form";
         }
@@ -129,7 +130,7 @@ public class ProvinceController {
         logger.info("Mostrando formulario de edición para provincia ID {}", id);
         try {
             ProvinceUpdateDTO provinceDTO = provinceService.getForEdit(id);
-            List<RegionDTO> listRegionsDTOs = provinceService.findAllRegions();
+            List<RegionDTO> listRegionsDTOs = provinceService.listRegionsForSelect();
 
             model.addAttribute("province", provinceDTO);
             model.addAttribute("listRegions", listRegionsDTOs);
@@ -159,7 +160,7 @@ public class ProvinceController {
         logger.info("Actualizando provincia ID {}", provinceDTO.getId());
 
         if (result.hasErrors()) {
-            List<RegionDTO> listRegionsDTOs = provinceService.findAllRegions();
+            List<RegionDTO> listRegionsDTOs = provinceService.listRegionsForSelect();
             model.addAttribute("listRegions", listRegionsDTOs);
             return "views/province/province-form";
         }
@@ -177,7 +178,7 @@ public class ProvinceController {
 
         } catch (ResourceNotFoundException ex) {
             logger.warn("No se encontró la provincia con ID {}", provinceDTO.getId());
-            String notFound = messageSource.getMessage("msg.province-controller.edit.notfound", null, locale);
+            String notFound = messageSource.getMessage("msg.province-controller.detail.notfound", null, locale);
             redirectAttributes.addFlashAttribute("errorMessage", notFound);
             return "redirect:/provinces";
 
