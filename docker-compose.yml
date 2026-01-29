@@ -5,9 +5,6 @@ services:
       - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MARIADB_DATABASE=${DB_DATABASE}
       - MARIADB_USER=${DB_USER}
-      - MARIADB_PASSWORD=${DB_PASSWORD}
-    ports:
-      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
 
@@ -40,6 +37,8 @@ services:
     # - Docker levantará primero 'db' y luego 'ticket-logger-app'.
     depends_on:
       - db
+    ports:
+      - "8080:8080"
 
     # Volúmenes montados en la app:
     # - 'app_uploads' es un volumen nombrado definido en la sección 'volumes:' al final.
@@ -48,36 +47,7 @@ services:
     volumes:
       - app_uploads:/app/uploads
 
-    # Servicio de Nginx que actúa como reverse proxy y termina TLS (HTTPS).
-  proxy:
-      build:
-        # Contexto de build = carpeta 'nginx' donde tienes nginx.conf y docker-entrypoint.sh.
-        context: ./nginx
-        # Dockerfile específico dentro de esa carpeta. De nuevo, si se llama 'Dockerfile'
-        # sería opcional, pero lo dejamos explícito.
-        dockerfile: Dockerfile
-      # Nombre del contenedor de Nginx.
-      container_name: ticket-logger-proxy
-      # Este servicio depende de que la app esté levantada.
-      # Esto asegura que el proxy se levante después de 'ticket-logger-app',
-      # aunque en la práctica Nginx puede arrancar incluso si el backend esté disponible tarda un poco:
-      # - simplemente devolverá errores 502 hasta que el backend esté disponible.
-      depends_on:
-        - ticket-logger-app
-      # Mapeo de puertos del host al contenedor:
-      # - "80:80" ------> puerto 80 del host se conecta al puerto 80 del contenedor (HTTP).
-      # - "443:443" ----> puerto 443 del host se conecta al puerto 443 del contenedor (HTTPS).
-      # Es lo que hace que puedas entrar desde el navegador a http(s)://localhost.
-      ports:
-        - "80:80"
-        - "443:443"
-      # Volumen para los certificados TLS:
-      # - 'certs' es un volumen nombrado definido en 'volumes:'.
-      # - Se monta en /etc/nginx/certs, que es donde el entrypoint genera/lee 'server.crt' y 'server.key'.
-      # - 'rw' indica lectura/escritura (modo por defecto, se podría omitir).
-      # Usar un volumen permite que el certificado se conserve entre reinicios del contenedor y no se regenere cada vez (a
-      volumes:
-        - certs:/etc/nginx/certs:rw
+
 
 volumes:
   db_data:
